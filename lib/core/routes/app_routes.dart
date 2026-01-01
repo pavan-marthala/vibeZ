@@ -7,7 +7,11 @@ class AppRoutes {
 
   static String get requestPermission => "/request-permission";
 
+  static String get folderSelection => "/folder-selection";
+
   static String get splash => "/splash";
 
   static String get player => "/player";
+
+  static String get settings => "/settings";
 }
