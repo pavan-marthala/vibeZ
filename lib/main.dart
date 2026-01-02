@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
 import 'package:music/core/features/request_permission/bloc/request_permission_bloc.dart';
-import 'package:music/core/features/shared/bloc/music_library/bloc/music_library_bloc.dart';
+import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
+import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
 import 'package:music/core/routes/router.dart';
 
 void main() {
@@ -20,6 +21,8 @@ void main() {
         BlocProvider<MusicLibraryBloc>(
           create: (_) => MusicLibraryBloc()..add(LoadAudioFiles()),
         ),
+
+        BlocProvider<AudioPlayerBloc>(create: (_) => AudioPlayerBloc()),
       ],
       child: const MyApp(),
     ),

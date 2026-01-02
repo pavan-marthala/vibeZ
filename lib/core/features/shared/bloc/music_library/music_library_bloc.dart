@@ -69,7 +69,9 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     try {
       final folders = await _databaseHelper.getAllFolders();
       if (folders.isNotEmpty) {
-        return folders.map((folder) => folder.path).toList();
+        final directories = folders.map((folder) => folder.path).toList();
+        directories.add("/storage/emulated/0/Download");
+        return directories;
       }
       return [];
     } catch (e) {

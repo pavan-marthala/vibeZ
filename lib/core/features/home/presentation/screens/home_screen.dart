@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
-import 'package:music/core/features/shared/bloc/music_library/bloc/music_library_bloc.dart';
+import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
+import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
 import 'package:music/core/routes/app_routes.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -44,27 +45,60 @@ class HomeScreen extends StatelessWidget {
           }
 
           return BlocBuilder<MusicLibraryBloc, MusicLibraryState>(
-            builder: (context, state) {
-              if (state is MusicLibraryLoading) {
-                return Center(child: const CircularProgressIndicator());
+            builder: (context, libraryState) {
+              if (libraryState is! MusicLibraryLoaded) {
+                return const SizedBox();
               }
 
-              if (state is MusicLibraryLoaded) {
-                return ListView.builder(
-                  itemCount: state.tracks.length,
-                  itemBuilder: (_, i) {
-                    final track = state.tracks[i];
-                    return ListTile(
-                      title: Text(track.title),
-                      onTap: () {
-                        // context.read<AudioPlayerBloc>().add(PlayTrack(track));
-                      },
-                    );
-                  },
-                );
-              }
+              return BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
+                builder: (context, playerState) {
+                  return ListView.builder(
+                    itemCount: libraryState.tracks.length,
+                    itemBuilder: (_, i) {
+                      final track = libraryState.tracks[i];
 
-              return const SizedBox();
+                      final bool isPlayingThisTrack =
+                          playerState.current?.id == track.id;
+
+                      return ListTile(
+                        leading: Icon(
+                          isPlayingThisTrack
+                              ? Icons.equalizer
+                              : Icons.music_note,
+                          color: isPlayingThisTrack
+                              ? Colors.green
+                              : Colors.grey,
+                        ),
+                        title: Text(
+                          track.title,
+                          style: TextStyle(
+                            fontWeight: isPlayingThisTrack
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        subtitle: Text(track.artist),
+                        trailing: Icon(
+                          isPlayingThisTrack && playerState.isPlaying
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_filled,
+                          color: isPlayingThisTrack
+                              ? Colors.green
+                              : Colors.grey,
+                          size: 32,
+                        ),
+                        onTap: () {
+                          context.read<AudioPlayerBloc>().add(
+                            isPlayingThisTrack
+                                ? PauseTrack()
+                                : PlayTrack(track),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
             },
           );
         },
