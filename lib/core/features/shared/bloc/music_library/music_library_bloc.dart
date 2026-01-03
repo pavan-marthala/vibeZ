@@ -1,11 +1,14 @@
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:music/core/database/database_helper.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
+import 'package:music/core/features/utils/album_art_cache.dart';
 import 'package:path/path.dart' as path;
+
 part 'music_library_event.dart';
 part 'music_library_state.dart';
 
@@ -15,6 +18,7 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     on<RefreshAudioFiles>(_onRefreshAudioFiles);
     on<SearchAudioFiles>(_onSearchAudioFiles);
   }
+
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
   Future<void> _onLoadAudioFiles(
@@ -117,36 +121,40 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
 
   Future<AudioTrack?> _createTrackFromFile(File file) async {
     try {
-      // final fileStat = await file.stat();
-      final fileName = path.basenameWithoutExtension(file.path);
-      String title = fileName;
-      final id = file.path.hashCode.toString();
-      String artist = 'Unknown Artist';
-      String album = 'Unknown Album';
-      Duration duration = Duration.zero;
-      try {
-        final tempPlayer = AudioPlayer();
-        await tempPlayer.setFilePath(file.path);
-        duration = tempPlayer.duration ?? Duration.zero;
-        await tempPlayer.dispose();
-      } catch (e) {
-        if (fileName.contains('-')) {
-          final parts = fileName.split('-');
-          if (parts.length >= 2) {
-            artist = parts[0].trim();
-            title = parts.sublist(1).join('-').trim();
-          }
-        }
+      final metadata = readMetadata(file, getImage: true);
+      Uint8List? rawArt;
+      if (metadata.pictures.isNotEmpty) {
+        rawArt = metadata.pictures.first.bytes;
       }
-      final track = AudioTrack(
-        id: id,
+
+      final artPath = await AlbumArtCache.save(
+        rawArt,
+        file.path.hashCode.toString(),
+      );
+
+      final title = metadata.title?.trim().isNotEmpty == true
+          ? metadata.title!
+          : path.basenameWithoutExtension(file.path);
+
+      final artist = metadata.artist?.trim().isNotEmpty == true
+          ? metadata.artist!
+          : 'Unknown Artist';
+
+      final album = metadata.album?.trim().isNotEmpty == true
+          ? metadata.album!
+          : 'Unknown Album';
+
+      final duration = metadata.duration ?? Duration.zero;
+
+      return AudioTrack(
+        id: file.path.hashCode.toString(),
         title: title,
         artist: artist,
         album: album,
         duration: duration,
         path: file.path,
+        albumArtPath: artPath,
       );
-      return track;
     } catch (e) {
       return null;
     }
