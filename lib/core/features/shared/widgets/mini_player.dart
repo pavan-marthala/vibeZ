@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
@@ -7,7 +8,9 @@ import 'package:music/core/features/utils/app_utils.dart';
 
 class MiniPlayer extends StatelessWidget {
   const MiniPlayer({super.key, this.onTap});
+
   final Function()? onTap;
+
   @override
   Widget build(BuildContext context) {
     return BlocSelector<AudioPlayerBloc, AudioPlayerState, bool>(
@@ -22,33 +25,31 @@ class MiniPlayer extends StatelessWidget {
 
 class _MiniPlayerBody extends StatelessWidget {
   const _MiniPlayerBody(this.onTap);
+
   final Function()? onTap;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: GestureDetector(
-              onTap: onTap,
-              // Swipe down to dismiss/minimize
-              onVerticalDragEnd: (details) {
-                if (details.primaryVelocity! > 300) {
-                  context.read<AudioPlayerBloc>().add(StopTrack());
-                }
-              },
-              child: Container(
-                height: 72,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: const Stack(
-                  children: [_MiniProgressBar(), _MiniControls()],
-                ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: GestureDetector(
+            onTap: onTap,
+            onVerticalDragEnd: (details) {
+              if (details.primaryVelocity! > 300) {
+                context.read<AudioPlayerBloc>().add(StopTrack());
+              }
+            },
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Stack(
+                children: [_MiniProgressBar(), _MiniControls()],
               ),
             ),
           ),
@@ -93,12 +94,12 @@ class _MiniProgressBar extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(40),
+                  left: Radius.circular(24),
                 ),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(40),
+                  left: Radius.circular(24),
                 ),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -108,7 +109,7 @@ class _MiniProgressBar extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(40),
+                          left: Radius.circular(24),
                         ),
                       ),
                     ),
@@ -147,8 +148,8 @@ class _MiniControls extends StatelessWidget {
               Hero(
                 tag: 'album-art-${data.track.id}',
                 child: Container(
-                  width: 56,
-                  height: 56,
+                  width: 46,
+                  height: 46,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
@@ -196,11 +197,9 @@ class _MiniControls extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // Controls
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Previous Button
                   _ControlButton(
                     icon: Icons.skip_previous_rounded,
                     size: 28,
@@ -213,14 +212,12 @@ class _MiniControls extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
 
-                  // Play/Pause Button
                   GestureDetector(
                     onTap: () {
                       context.read<AudioPlayerBloc>().add(
                         data.isPlaying ? PauseTrack() : ResumeTrack(),
                       );
                     },
-                    // Double tap to skip forward 10 seconds
                     onDoubleTap: () {
                       final bloc = context.read<AudioPlayerBloc>();
                       final newPosition =
@@ -245,7 +242,6 @@ class _MiniControls extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
 
-                  // Next Button
                   _ControlButton(
                     icon: Icons.skip_next_rounded,
                     size: 28,

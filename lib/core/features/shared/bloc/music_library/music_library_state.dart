@@ -13,14 +13,17 @@ final class MusicLibraryLoading extends MusicLibraryState {}
 
 final class MusicLibraryLoaded extends MusicLibraryState {
   final List<AudioTrack> tracks;
-  const MusicLibraryLoaded(this.tracks);
+  final List<Album> albums;
+
+  const MusicLibraryLoaded(this.tracks, [this.albums = const []]);
 
   @override
-  List<Object> get props => [tracks];
+  List<Object> get props => [tracks, albums];
 }
 
 final class MusicLibraryError extends MusicLibraryState {
   final String message;
+
   const MusicLibraryError(this.message);
 
   @override

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/empty_tracks.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/error_widget.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/library_builder.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/loading_widget.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
+import 'package:music/core/features/track/presentation/widgets/track_builder.dart';
+import 'package:music/core/features/utils/empty_tracks.dart';
+import 'package:music/core/features/utils/error_widget.dart';
+import 'package:music/core/features/utils/loading_widget.dart';
 
-class HomeBody extends StatelessWidget {
-  const HomeBody({super.key});
+class TrackBody extends StatelessWidget {
+  const TrackBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class HomeBody extends StatelessWidget {
           );
         }
 
-        return LibraryBuilder(libraryState: libraryState);
+        return TrackBuilder(libraryState: libraryState);
       },
     );
   }

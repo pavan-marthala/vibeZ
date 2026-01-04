@@ -19,6 +19,19 @@ class AudioTrack extends Equatable {
     this.albumArtPath,
   });
 
+  List<String> get artists {
+    return artist
+        .split(RegExp(r'[,;&/]'))
+        .map((a) => a.trim())
+        .where((a) => a.isNotEmpty)
+        .toList();
+  }
+
+  String get primaryArtist {
+    final artistList = artists;
+    return artistList.isNotEmpty ? artistList.first : artist;
+  }
+
   @override
   List<Object?> get props => [
     id,

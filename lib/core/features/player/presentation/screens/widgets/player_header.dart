@@ -7,7 +7,9 @@ import 'package:music/generated/assets.dart';
 
 class PlayerHeader extends StatelessWidget {
   const PlayerHeader({super.key, required this.title});
+
   final String title;
+
   @override
   Widget build(BuildContext context) {
     final colors = context.theme.appColors;
@@ -25,9 +27,7 @@ class PlayerHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: typography.headlineMedium.copyWith(
-              color: colors.textPrimary,
-            ),
+            style: typography.headlineSmall.copyWith(color: colors.textPrimary),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,

@@ -8,6 +8,7 @@ import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.
 import 'package:music/core/features/request_permission/bloc/request_permission_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
+import 'package:music/core/features/shared/bloc/stats_bloc_bloc/stats_bloc.dart';
 import 'package:music/core/routes/app_routes.dart';
 import 'package:music/core/routes/router.dart';
 import 'package:music/core/theme/app_theme.dart';
@@ -30,7 +31,7 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider<RequestPermissionBloc>(create: (_) => permissionBloc),
-
+        BlocProvider<StatsBloc>(create: (_) => StatsBloc()..add(LoadStats())),
         BlocProvider<FolderSelectionBloc>(create: (_) => folderSelectionBloc),
         BlocProvider<MusicLibraryBloc>(
           create: (_) => MusicLibraryBloc()..add(LoadAudioFiles()),

@@ -1,3 +1,4 @@
+// lib/core/features/shared/bloc/music_library/music_library_bloc.dart
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -5,6 +6,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:music/core/database/database_helper.dart';
+import 'package:music/core/features/shared/models/album.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/utils/album_art_cache.dart';
 import 'package:path/path.dart' as path;
@@ -33,7 +35,11 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
         final audioFiles = await _scanDirectoryForAudioFiles(dir);
         tracks.addAll(audioFiles);
       }
-      emit(MusicLibraryLoaded(tracks));
+
+      // Group tracks into albums
+      final albums = _groupTracksIntoAlbums(tracks);
+
+      emit(MusicLibraryLoaded(tracks, albums));
     } catch (e) {
       emit(MusicLibraryError('Failed to load audio files'));
     }
@@ -45,7 +51,8 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
   ) async {
     try {
       final tracks = <AudioTrack>[];
-      emit(MusicLibraryLoaded(tracks));
+      final albums = _groupTracksIntoAlbums(tracks);
+      emit(MusicLibraryLoaded(tracks, albums));
     } catch (e) {
       emit(MusicLibraryError('Failed to refresh audio files'));
     }
@@ -55,18 +62,59 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     SearchAudioFiles event,
     Emitter<MusicLibraryState> emit,
   ) async {
+    if (state is! MusicLibraryLoaded) return;
+
     try {
-      final allTracks = <AudioTrack>[];
-      final filteredTracks = allTracks
+      final currentState = state as MusicLibraryLoaded;
+      final query = event.query.toLowerCase();
+
+      if (query.isEmpty) {
+        emit(MusicLibraryLoaded(currentState.tracks, currentState.albums));
+        return;
+      }
+
+      final filteredTracks = currentState.tracks
           .where(
             (track) =>
-                track.title.toLowerCase().contains(event.query.toLowerCase()),
+                track.title.toLowerCase().contains(query) ||
+                track.artist.toLowerCase().contains(query) ||
+                track.album.toLowerCase().contains(query),
           )
           .toList();
-      emit(MusicLibraryLoaded(filteredTracks));
+
+      final filteredAlbums = _groupTracksIntoAlbums(filteredTracks);
+
+      emit(MusicLibraryLoaded(filteredTracks, filteredAlbums));
     } catch (e) {
       emit(MusicLibraryError('Failed to search audio files'));
     }
+  }
+
+  List<Album> _groupTracksIntoAlbums(List<AudioTrack> tracks) {
+    final Map<String, List<AudioTrack>> albumMap = {};
+
+    for (final track in tracks) {
+      // Use album name + primary artist as key to group tracks
+      final key = '${track.album}_${track.primaryArtist}';
+
+      if (!albumMap.containsKey(key)) {
+        albumMap[key] = [];
+      }
+      albumMap[key]!.add(track);
+    }
+
+    return albumMap.entries.map((entry) {
+        final tracks = entry.value;
+        // Sort tracks by title
+        tracks.sort((a, b) => a.title.compareTo(b.title));
+
+        return Album.fromTracks(
+          tracks.first.album,
+          tracks.first.primaryArtist,
+          tracks,
+        );
+      }).toList()
+      ..sort((a, b) => a.name.compareTo(b.name)); // Sort albums alphabetically
   }
 
   Future<List<String>> _getAllStorageDirectories() async {

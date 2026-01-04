@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/empty_tracks.dart';
-import 'package:music/core/theme/app_theme.dart';
-
 import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+import 'package:music/core/features/utils/empty_tracks.dart';
+import 'package:music/core/theme/app_theme.dart';
 
 class PremiumErrorState extends StatefulWidget {
   final String title;

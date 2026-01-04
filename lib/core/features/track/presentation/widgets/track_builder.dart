@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/track_card.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
+import 'package:music/core/features/track/presentation/widgets/track_card.dart';
 import 'package:music/core/features/utils/sized_context.dart';
 
-class LibraryBuilder extends StatelessWidget {
-  const LibraryBuilder({super.key, required this.libraryState});
+class TrackBuilder extends StatelessWidget {
+  const TrackBuilder({super.key, required this.libraryState});
+
   final MusicLibraryLoaded libraryState;
+
   @override
   Widget build(BuildContext context) {
     return BlocSelector<

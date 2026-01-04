@@ -3,6 +3,12 @@ class AppRoutes {
 
   static String get home => "/";
 
+  static String get albums => "/albums";
+
+  static String get tracks => "/tracks";
+
+  static String get playlist => "/playlist";
+
   static String get onboard => "/on-boarding";
 
   static String get requestPermission => "/request-permission";

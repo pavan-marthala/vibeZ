@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:music/core/features/home/presentation/screens/widgets/empty_tracks.dart';
+import 'package:music/core/features/utils/empty_tracks.dart';
 import 'package:music/core/theme/app_theme.dart';
 
 class PremiumEmptyState extends StatefulWidget {

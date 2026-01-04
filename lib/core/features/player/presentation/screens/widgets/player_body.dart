@@ -8,6 +8,7 @@ import 'package:music/core/features/player/presentation/screens/widgets/track_in
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/utils/app_utils.dart';
+import 'package:music/core/features/utils/sized_context.dart';
 
 class PlayerBody extends StatelessWidget {
   const PlayerBody({super.key});
@@ -38,7 +39,7 @@ class PlayerBody extends StatelessWidget {
                 tag: 'album-art-${state.track?.id}',
                 child: Container(
                   width: double.infinity,
-                  height: 400,
+                  height: context.heightPx * 0.4,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
@@ -55,11 +56,10 @@ class PlayerBody extends StatelessWidget {
               ),
               SizedBox(height: 24),
               TrackInfo(track: state.track),
-              SizedBox(height: 24),
-              ProgressBar(),
               SizedBox(height: 12),
+              ProgressBar(),
               TimeLabels(),
-              SizedBox(height: 32),
+              SizedBox(height: 24),
               PlayerControls(),
             ],
           ),
