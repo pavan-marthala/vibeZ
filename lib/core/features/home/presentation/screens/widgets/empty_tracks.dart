@@ -23,7 +23,7 @@ class NoMusicFoundState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Lottie.asset(
-              Assets.lottieEmptyFolderJson,
+              Assets.lottieEmptyFolder,
               decoder: customDecoder,
               width: 200,
               height: 200,
