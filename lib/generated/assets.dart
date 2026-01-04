@@ -8,4 +8,7 @@ class Assets {
   static const String lottieEmptyFolder = 'assets/lottie/empty_folder.lottie';
   static const String lottieLoading = 'assets/lottie/loading.lottie';
   static const String svgArrowDown = 'assets/svg/arrow_down.svg';
+  static const String svgAlbums = 'assets/svg/albums.svg';
+  static const String svgMusic = 'assets/svg/music.svg';
+  static const String svgPlaylist = 'assets/svg/playlist.svg';
 }
