@@ -66,11 +66,11 @@ class _UpdatePosition extends AudioPlayerEvent {
   List<Object?> get props => [position];
 }
 
-class _UpdatePlayerState extends AudioPlayerEvent {
-  final bool isPlaying;
+// class _UpdatePlayerState extends AudioPlayerEvent {
+//   final bool isPlaying;
 
-  const _UpdatePlayerState(this.isPlaying);
+//   const _UpdatePlayerState(this.isPlaying);
 
-  @override
-  List<Object?> get props => [isPlaying];
-}
+//   @override
+//   List<Object?> get props => [isPlaying];
+// }

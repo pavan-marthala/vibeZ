@@ -16,23 +16,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   late final StreamSubscription _positionSub;
   late final StreamSubscription _durationSub;
 
-  // final AudioPlayer _player = AudioPlayer();
-
   AudioPlayerBloc(this.handler) : super(const AudioPlayerState()) {
     on<PlayTrack>(_onPlayTrack);
     on<PauseTrack>((_, _) => handler.pause());
     on<ResumeTrack>((_, _) => handler.play());
     on<SeekTrack>((e, _) => handler.seek(e.position));
     on<StopTrack>(_onStopTrack);
-    // on<_UpdateDuration>(_onUpdateDuration);
-    // on<_UpdatePosition>(_onUpdatePosition);
     on<NextTrack>(_onNextTrack);
     on<PreviousTrack>(_onPreviousTrack);
-    // on<_UpdatePlayerState>((event, emit) {
-    //   if (state.isPlaying != event.isPlaying) {
-    //     emit(state.copyWith(isPlaying: event.isPlaying));
-    //   }
-    // });
 
     /// Listen to player state
     _playerStateSub = handler.player.playerStateStream.listen((playerState) {
@@ -56,7 +47,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     });
 
     on<_UpdateIsPlaying>(
-      (e, emit) => emit(state.copyWith(isPlaying: e?.isPlaying)),
+      (e, emit) => emit(state.copyWith(isPlaying: e.isPlaying)),
     );
 
     on<_UpdatePosition>(
@@ -82,7 +73,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
           queue: event.queue,
           currentIndex: index,
           position: Duration.zero,
-          // duration: _player.duration ?? Duration.zero,
         ),
       );
 
@@ -93,27 +83,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       emit(state.copyWith(isPlaying: false, clearCurrent: true));
     }
   }
-
-  // Future<void> _onPauseTrack(
-  //   PauseTrack event,
-  //   Emitter<AudioPlayerState> emit,
-  // ) async {
-  //   await _player.pause();
-  // }
-  //
-  // Future<void> _onResumeTrack(
-  //   ResumeTrack event,
-  //   Emitter<AudioPlayerState> emit,
-  // ) async {
-  //   await _player.play();
-  // }
-  //
-  // Future<void> _onSeekTrack(
-  //   SeekTrack event,
-  //   Emitter<AudioPlayerState> emit,
-  // ) async {
-  //   await _player.seek(event.position);
-  // }
 
   Future<void> _onNextTrack(
     NextTrack event,
@@ -164,25 +133,6 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     log('Stopping track');
     await handler.stop();
     emit(const AudioPlayerState());
-  }
-
-  void _onUpdateDuration(
-    _UpdateDuration event,
-    Emitter<AudioPlayerState> emit,
-  ) {
-    if (state.duration != event.duration) {
-      emit(state.copyWith(duration: event.duration));
-    }
-  }
-
-  void _onUpdatePosition(
-    _UpdatePosition event,
-    Emitter<AudioPlayerState> emit,
-  ) {
-    /// Only emit if the second has changed to reduce updates
-    if (state.position.inSeconds != event.position.inSeconds) {
-      emit(state.copyWith(position: event.position));
-    }
   }
 
   @override

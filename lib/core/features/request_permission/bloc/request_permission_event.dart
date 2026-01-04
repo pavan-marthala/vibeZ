@@ -13,3 +13,8 @@ class CheckPermissionStatus extends RequestPermissionEvent {
   @override
   List<Object> get props => [];
 }
+
+class ResetPermissions extends RequestPermissionEvent {
+  @override
+  List<Object> get props => [];
+}

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:music/core/features/request_permission/bloc/request_permission_bloc.dart';
 import 'package:music/core/routes/app_routes.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 class RequestPermissionScreen extends StatelessWidget {
   const RequestPermissionScreen({super.key});
@@ -17,6 +18,7 @@ class RequestPermissionScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
+        backgroundColor: const Color(0xFF121212),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -26,18 +28,27 @@ class RequestPermissionScreen extends StatelessWidget {
                 const Icon(
                   Icons.music_note,
                   size: 100,
-                  color: Colors.deepPurple,
+                  color: Color(0xFF1ED760),
                 ),
                 const SizedBox(height: 32),
                 const Text(
                   'Welcome to vibeZ',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'We need some permissions to provide you the best music experience',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                Text(
+                  Platform.isIOS
+                      ? 'vibeZ needs access to your music library and notifications to work properly'
+                      : 'We need some permissions to provide you the best music experience',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFFB3B3B3),
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
@@ -47,15 +58,19 @@ class RequestPermissionScreen extends StatelessWidget {
                       children: [
                         _PermissionItem(
                           icon: Icons.audiotrack,
-                          title: 'Music Library Access',
-                          description: 'To read and play your music files',
+                          title: Platform.isIOS
+                              ? 'Music Library'
+                              : 'Storage Access',
+                          description: Platform.isIOS
+                              ? 'Access your music library'
+                              : 'Read and play your music files',
                           isGranted: state.isAudioGranted,
                         ),
                         const SizedBox(height: 16),
                         _PermissionItem(
                           icon: Icons.notifications,
                           title: 'Notifications',
-                          description: 'To show playback controls and updates',
+                          description: 'Show playback controls',
                           isGranted: state.isNotificationGranted,
                         ),
                       ],
@@ -65,56 +80,93 @@ class RequestPermissionScreen extends StatelessWidget {
                 const SizedBox(height: 48),
                 BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
                   builder: (context, state) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (!state.allGranted) {
-                            context.read<RequestPermissionBloc>().add(
-                              RequestPermission(),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                    return Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: state.allGranted
+                                ? null
+                                : () {
+                                    context.read<RequestPermissionBloc>().add(
+                                      RequestPermission(),
+                                    );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1ED760),
+                              foregroundColor: Colors.black,
+                              disabledBackgroundColor: const Color(0xFF282828),
+                              disabledForegroundColor: const Color(0xFFB3B3B3),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                            ),
+                            child: Text(
+                              state.allGranted
+                                  ? '✓ All Permissions Granted'
+                                  : 'Grant Permissions',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                        child: Text(
-                          state.allGranted
-                              ? 'All Permissions Granted'
-                              : 'Grant Permissions',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
+                        if (state.hasCheckedPermissions &&
+                            !state.allGranted) ...[
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () async {
+                                await openAppSettings();
+                                // Wait a bit and then check permissions
+                                await Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+                                if (context.mounted) {
+                                  context.read<RequestPermissionBloc>().add(
+                                    CheckPermissionStatus(),
+                                  );
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF1ED760),
+                                side: const BorderSide(
+                                  color: Color(0xFF1ED760),
+                                  width: 2,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(50),
+                                ),
+                              ),
+                              child: const Text(
+                                'Open Settings',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            Platform.isIOS
+                                ? 'Open Settings → vibeZ → Enable Media & Apple Music and Notifications'
+                                : 'Open Settings to manually enable permissions',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6A6A6A),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ],
                     );
-                  },
-                ),
-                const SizedBox(height: 16),
-                BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
-                  builder: (context, state) {
-                    // Show "Open Settings" button if permissions were permanently denied
-                    if (state.hasCheckedPermissions && !state.allGranted) {
-                      return TextButton(
-                        onPressed: () async {
-                          await openAppSettings();
-                          // Check permissions again when user returns from settings
-                          if (context.mounted) {
-                            context.read<RequestPermissionBloc>().add(
-                              CheckPermissionStatus(),
-                            );
-                          }
-                        },
-                        child: const Text(
-                          'Open Settings',
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
                   },
                 ),
               ],
@@ -141,54 +193,72 @@ class _PermissionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isGranted
-                ? Colors.green.withOpacity(0.1)
-                : Colors.deepPurple.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: isGranted ? Colors.green : Colors.deepPurple,
-          ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF181818),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isGranted ? const Color(0xFF1ED760) : const Color(0xFF282828),
+          width: 1,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isGranted
+                  ? const Color(0xFF1ED760).withValues(alpha: 0.2)
+                  : const Color(0xFF282828),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: isGranted
+                  ? const Color(0xFF1ED760)
+                  : const Color(0xFFB3B3B3),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
+                    if (isGranted)
+                      const Icon(
+                        Icons.check_circle,
+                        color: Color(0xFF1ED760),
+                        size: 20,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFFB3B3B3),
                   ),
-                  if (isGranted)
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 20,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

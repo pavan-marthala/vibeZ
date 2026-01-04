@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-class SpotifyGradientWrapper extends StatelessWidget {
+class GradientWrapper extends StatelessWidget {
   final Widget child;
   final List<Color>? colors;
   final AlignmentGeometry begin;
   final AlignmentGeometry end;
 
-  const SpotifyGradientWrapper({
+  const GradientWrapper({
     super.key,
     required this.child,
     this.colors,
