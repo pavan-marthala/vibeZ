@@ -1,9 +1,13 @@
-// lib/core/features/home/presentation/screens/home_screen.dart
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
 import 'package:music/core/features/shared/bloc/stats_bloc_bloc/stats_bloc.dart';
+import 'package:music/core/features/shared/models/listening_stats.dart';
+import 'package:music/core/features/utils/loading_widget.dart';
 import 'package:music/core/features/utils/sized_context.dart';
+import 'package:music/core/theme/app_colors.dart';
 import 'package:music/core/theme/app_theme.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -21,31 +25,21 @@ class HomeScreen extends StatelessWidget {
         },
         child: CustomScrollView(
           slivers: [
-            // App Bar
             SliverAppBar(
               floating: true,
+              centerTitle: true,
               backgroundColor: colors.background,
               title: const Text('vibeZ'),
               actions: [
                 IconButton(icon: const Icon(Icons.search), onPressed: () {}),
               ],
             ),
-
-            // Stats Section
             const _StatsSection(),
-
-            // Recently Played
             const _RecentlyPlayedSection(),
-
-            // Top Tracks
             const _TopTracksSection(),
-
-            // Top Artists
-            const _TopArtistsSection(),
-
             SliverPadding(
               padding: EdgeInsets.only(bottom: context.viewInsets.bottom + 160),
-              sliver: const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              sliver: const _TopArtistsSection(),
             ),
           ],
         ),
@@ -53,8 +47,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
-// ==================== Stats Section ====================
 
 class _StatsSection extends StatelessWidget {
   const _StatsSection();
@@ -65,12 +57,7 @@ class _StatsSection extends StatelessWidget {
       builder: (context, state) {
         if (state is StatsLoading) {
           return const SliverToBoxAdapter(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: CircularProgressIndicator(),
-              ),
-            ),
+            child: LoadingWidget(message: "Loading stats..."),
           );
         }
 
@@ -87,7 +74,7 @@ class _StatsSection extends StatelessWidget {
           );
         }
 
-        if (state is! StatsLoaded || state.stats.totalPlays == 0) {
+        if (state is! StatsLoaded) {
           return SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -160,7 +147,7 @@ class _StatsSection extends StatelessWidget {
                         icon: Icons.library_music,
                         value: '${stats.uniqueTracks}',
                         label: 'Unique Tracks',
-                        color: colors.accent2,
+                        color: colors.secondary,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -169,7 +156,7 @@ class _StatsSection extends StatelessWidget {
                         icon: Icons.person_outline,
                         value: '${stats.uniqueArtists}',
                         label: 'Artists',
-                        color: colors.accent3,
+                        color: colors.secondary,
                       ),
                     ),
                   ],
@@ -245,8 +232,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ==================== Recently Played Section ====================
-
 class _RecentlyPlayedSection extends StatelessWidget {
   const _RecentlyPlayedSection();
 
@@ -266,7 +251,7 @@ class _RecentlyPlayedSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -310,7 +295,7 @@ class _RecentlyPlayedSection extends StatelessWidget {
 }
 
 class _RecentTrackCard extends StatelessWidget {
-  final dynamic track; // PlayHistory
+  final dynamic track;
 
   const _RecentTrackCard({required this.track});
 
@@ -333,19 +318,19 @@ class _RecentTrackCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.music_note,
-                      size: 40,
-                      color: colors.primary,
-                    ),
-                  ),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: track.albumArtPath != null
+                      ? Image.file(
+                          File(track.albumArtPath!),
+                          width: double.infinity,
+                          height: 80,
+                          alignment: .topCenter,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _buildDefaultArt(colors),
+                        )
+                      : _buildDefaultArt(colors),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -375,8 +360,6 @@ class _RecentTrackCard extends StatelessWidget {
   }
 }
 
-// ==================== Top Tracks Section ====================
-
 class _TopTracksSection extends StatelessWidget {
   const _TopTracksSection();
 
@@ -396,7 +379,7 @@ class _TopTracksSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Text(
                   'Top Tracks',
                   style: context.theme.appTypography.titleLarge.copyWith(
@@ -425,7 +408,7 @@ class _TopTracksSection extends StatelessWidget {
 
 class _TopTrackItem extends StatelessWidget {
   final int rank;
-  final dynamic track; // TrackStats
+  final TrackStats track;
 
   const _TopTrackItem({required this.rank, required this.track});
 
@@ -441,31 +424,23 @@ class _TopTrackItem extends StatelessWidget {
         border: Border.all(color: colors.border, width: 1),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            gradient: rank <= 3
-                ? LinearGradient(
-                    colors: [
-                      colors.primary,
-                      colors.primary.withValues(alpha: 0.6),
-                    ],
-                  )
-                : null,
-            color: rank > 3 ? colors.surfaceDark : null,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              '#$rank',
-              style: context.theme.appTypography.titleMedium.copyWith(
-                color: colors.textPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: track.albumArtPath != null
+                  ? Image.file(
+                      File(track.albumArtPath!),
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _buildDefaultArt(colors),
+                    )
+                  : _buildDefaultArt(colors),
             ),
-          ),
+          ],
         ),
         title: Text(
           track.title,
@@ -495,7 +470,14 @@ class _TopTrackItem extends StatelessWidget {
   }
 }
 
-// ==================== Top Artists Section ====================
+Widget _buildDefaultArt(AppColors colors) {
+  return Container(
+    width: 48,
+    height: 48,
+    color: colors.primary.withValues(alpha: 0.2),
+    child: Icon(Icons.music_note, color: colors.primary, size: 24),
+  );
+}
 
 class _TopArtistsSection extends StatelessWidget {
   const _TopArtistsSection();
@@ -516,7 +498,7 @@ class _TopArtistsSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Text(
                   'Top Artists',
                   style: context.theme.appTypography.titleLarge.copyWith(
@@ -526,11 +508,11 @@ class _TopArtistsSection extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 230,
+                height: 200,
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   scrollDirection: Axis.horizontal,
-                  itemCount: artists.length > 5 ? 5 : artists.length,
+                  itemCount: artists.length,
                   itemBuilder: (context, index) {
                     final artist = artists[index];
                     return _TopArtistCard(rank: index + 1, artist: artist);
@@ -547,7 +529,7 @@ class _TopArtistsSection extends StatelessWidget {
 
 class _TopArtistCard extends StatelessWidget {
   final int rank;
-  final dynamic artist; // ArtistStats
+  final dynamic artist;
 
   const _TopArtistCard({required this.rank, required this.artist});
 
@@ -555,92 +537,84 @@ class _TopArtistCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.theme.appColors;
 
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      child: Card(
-        color: colors.surfaceLight,
-        child: InkWell(
-          onTap: () {
-            // TODO: Show artist details
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colors.primary,
-                            colors.primary.withValues(alpha: 0.5),
-                          ],
-                        ),
-                      ),
-                      child: Icon(Icons.person, size: 50, color: colors.white),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: rank <= 3 ? colors.primary : colors.surfaceDark,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '#$rank',
-                        style: context.theme.appTypography.labelSmall.copyWith(
-                          color: colors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return SizedBox(
+      width: 130,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colors.primary,
+                          colors.primary.withValues(alpha: 0.5),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  artist.artist,
-                  style: context.theme.appTypography.bodyMedium.copyWith(
-                    color: colors.textPrimary,
-                    fontWeight: FontWeight.w600,
+                    child: Icon(Icons.person, size: 50, color: colors.white),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${artist.playCount} plays',
-                  style: context.theme.appTypography.bodySmall.copyWith(
-                    color: colors.textSecondary,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: rank <= 3 ? colors.primary : colors.surfaceDark,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '#$rank',
+                      style: context.theme.appTypography.labelSmall.copyWith(
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                artist.artist,
+                style: context.theme.appTypography.bodyMedium.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
-                Text(
-                  '${artist.trackCount} tracks',
-                  style: context.theme.appTypography.bodySmall.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+              // const SizedBox(height: 4),
+              // Text(
+              //   '${artist.playCount} plays',
+              //   style: context.theme.appTypography.bodySmall.copyWith(
+              //     color: colors.textSecondary,
+              //   ),
+              // ),
+              // Text(
+              //   '${artist.trackCount} tracks',
+              //   style: context.theme.appTypography.bodySmall.copyWith(
+              //     color: colors.textSecondary,
+              //   ),
+              // ),
+            ],
           ),
         ),
       ),
     );
   }
 }
-
-// ==================== Empty State ====================
 
 class _EmptyStateCard extends StatelessWidget {
   final IconData icon;

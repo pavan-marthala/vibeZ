@@ -4,6 +4,7 @@ import 'package:music/core/features/utils/app_utils.dart';
 
 class TrackCard extends StatelessWidget {
   const TrackCard({
+    super.key,
     required this.isPlayingThisTrack,
     required this.track,
     required this.onPlayPause,
