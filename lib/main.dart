@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
+import 'package:music/core/features/playlist/presentation/bloc/playlist_bloc.dart';
 import 'package:music/core/features/request_permission/bloc/request_permission_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
@@ -32,6 +33,9 @@ void main() async {
       providers: [
         BlocProvider<RequestPermissionBloc>(create: (_) => permissionBloc),
         BlocProvider<StatsBloc>(create: (_) => StatsBloc()..add(LoadStats())),
+        BlocProvider<PlaylistBloc>(
+          create: (_) => PlaylistBloc()..add(FetchPlayList()),
+        ),
         BlocProvider<FolderSelectionBloc>(create: (_) => folderSelectionBloc),
         BlocProvider<MusicLibraryBloc>(
           create: (_) => MusicLibraryBloc()..add(LoadAudioFiles()),

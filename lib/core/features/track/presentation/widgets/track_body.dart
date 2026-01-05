@@ -18,7 +18,7 @@ class TrackBody extends StatelessWidget {
           return const LoadingWidget(message: "Scanning for music files...");
         }
         if (libraryState is MusicLibraryError) {
-          return PremiumErrorState(
+          return ErrorState(
             title: 'Oops! Something Went Wrong',
             message: libraryState.message,
             buttonText: 'Try Again',

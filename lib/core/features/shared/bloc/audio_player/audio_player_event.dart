@@ -74,3 +74,12 @@ class _UpdatePosition extends AudioPlayerEvent {
 //   @override
 //   List<Object?> get props => [isPlaying];
 // }
+
+class RestoreLastPlayback extends AudioPlayerEvent {
+  final List<AudioTrack> allTracks;
+
+  const RestoreLastPlayback(this.allTracks);
+
+  @override
+  List<Object?> get props => [allTracks];
+}

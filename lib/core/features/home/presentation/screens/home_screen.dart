@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
+import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
+import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
 import 'package:music/core/features/shared/bloc/stats_bloc_bloc/stats_bloc.dart';
 import 'package:music/core/features/shared/models/listening_stats.dart';
 import 'package:music/core/features/utils/loading_widget.dart';
@@ -17,31 +19,42 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.theme.appColors;
 
-    return Scaffold(
-      backgroundColor: colors.background,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<StatsBloc>().add(RefreshStats());
-        },
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              floating: true,
-              centerTitle: true,
-              backgroundColor: colors.background,
-              title: const Text('vibeZ'),
-              actions: [
-                IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-              ],
-            ),
-            const _StatsSection(),
-            const _RecentlyPlayedSection(),
-            const _TopTracksSection(),
-            SliverPadding(
-              padding: EdgeInsets.only(bottom: context.viewInsets.bottom + 160),
-              sliver: const _TopArtistsSection(),
-            ),
-          ],
+    return BlocListener<MusicLibraryBloc, MusicLibraryState>(
+      listener: (context, state) {
+        if (state is MusicLibraryLoaded && state.tracks.isNotEmpty) {
+          context.read<AudioPlayerBloc>().add(
+            RestoreLastPlayback(state.tracks),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colors.background,
+        body: RefreshIndicator(
+          onRefresh: () async {
+            context.read<StatsBloc>().add(RefreshStats());
+          },
+          child: CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                floating: true,
+                centerTitle: true,
+                backgroundColor: colors.background,
+                title: const Text('vibeZ'),
+                actions: [
+                  IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+                ],
+              ),
+              const _StatsSection(),
+              const _RecentlyPlayedSection(),
+              const _TopTracksSection(),
+              SliverPadding(
+                padding: EdgeInsets.only(
+                  bottom: context.viewInsets.bottom + 160,
+                ),
+                sliver: const _TopArtistsSection(),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -636,7 +649,7 @@ class _EmptyStateCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: colors.surfaceLight,
+        color: colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colors.border, width: 1),
       ),

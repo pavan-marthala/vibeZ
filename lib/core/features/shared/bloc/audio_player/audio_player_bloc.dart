@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:music/core/database/database_helper.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/shared/models/play_history.dart';
+import 'package:music/core/features/shared/models/playback_state.dart';
 import 'package:music/core/service/vibez_audio_handler.dart';
 
 part 'audio_player_event.dart';
@@ -28,6 +29,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     on<StopTrack>(_onStopTrack);
     on<NextTrack>(_onNextTrack);
     on<PreviousTrack>(_onPreviousTrack);
+    on<RestoreLastPlayback>(_onRestoreLastPlayback);
 
     /// Listen to player state
     _playerStateSub = handler.player.playerStateStream.listen((playerState) {
@@ -44,6 +46,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
     _positionSub = handler.player.positionStream.listen((pos) {
       add(_UpdatePosition(pos));
+      _savePlaybackStateThrottled(pos);
     });
 
     _durationSub = handler.player.durationStream.listen((dur) {
@@ -61,6 +64,69 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     on<_UpdateDuration>(
       (e, emit) => emit(state.copyWith(duration: e.duration)),
     );
+  }
+
+  DateTime? _lastSaveTime;
+
+  void _savePlaybackStateThrottled(Duration position) {
+    final now = DateTime.now();
+    if (_lastSaveTime == null ||
+        now.difference(_lastSaveTime!) > const Duration(seconds: 5)) {
+      _lastSaveTime = now;
+      _saveCurrentPlaybackState(position);
+    }
+  }
+
+  Future<void> _saveCurrentPlaybackState(Duration position) async {
+    if (state.current == null) return;
+
+    final playbackState = PlaybackState(
+      trackId: state.current!.id,
+      trackPath: state.current!.path,
+      positionMs: position.inMilliseconds,
+      savedAt: DateTime.now(),
+    );
+
+    try {
+      await DatabaseHelper.instance.savePlaybackState(playbackState);
+    } catch (e) {
+      print('Error saving playback state: $e');
+    }
+  }
+
+  Future<void> _onRestoreLastPlayback(
+    RestoreLastPlayback event,
+    Emitter<AudioPlayerState> emit,
+  ) async {
+    try {
+      final lastState = await DatabaseHelper.instance.getLastPlaybackState();
+      if (lastState == null) return;
+
+      // final hoursSinceLastPlay =
+      //     DateTime.now().difference(lastState.savedAt).inHours;
+      // if (hoursSinceLastPlay > 24) return;
+
+      final track = event.allTracks.firstWhere(
+        (t) => t.id == lastState.trackId,
+        orElse: () => throw Exception('Track not found'),
+      );
+
+      emit(
+        state.copyWith(
+          current: track,
+          position: Duration(milliseconds: lastState.positionMs),
+          queue: event.allTracks,
+          currentIndex: event.allTracks.indexOf(track),
+        ),
+      );
+
+      /// Play the track
+      await handler.playTrack(track, shouldPlay: false);
+      await handler.seek(Duration(milliseconds: lastState.positionMs));
+      log('Restored playback: ${track.title} at ${lastState.positionMs}ms');
+    } catch (e) {
+      log('Error restoring playback: $e');
+    }
   }
 
   Future<void> _onPlayTrack(
@@ -162,9 +228,13 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   @override
   Future<void> close() async {
-    if (state.current != null && _trackStartTime != null) {
-      await _savePlayHistory(state.current!);
+    if (state.current != null) {
+      await _saveCurrentPlaybackState(state.position);
+      if (_trackStartTime != null) {
+        await _savePlayHistory(state.current!);
+      }
     }
+
     _playerStateSub.cancel();
     _positionSub.cancel();
     _durationSub.cancel();

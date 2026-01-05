@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music/core/features/albums/presentation/album_tracks_screen.dart';
 import 'package:music/core/features/albums/presentation/albums_screen.dart';
 import 'package:music/core/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:music/core/features/folder_selection/screens/folder_selection_screen.dart';
 import 'package:music/core/features/home/presentation/screens/home_screen.dart';
+import 'package:music/core/features/home/presentation/screens/recently_played_screen.dart';
+import 'package:music/core/features/home/presentation/screens/top_artists.dart';
+import 'package:music/core/features/home/presentation/screens/top_tracks.dart';
 import 'package:music/core/features/player/presentation/screens/full_screen_player.dart';
 import 'package:music/core/features/playlist/presentation/playlist_screen.dart';
+import 'package:music/core/features/playlist/presentation/playlist_tracks_screen.dart';
 import 'package:music/core/features/request_permission/screens/request_permission_screen.dart';
 import 'package:music/core/features/settings/screens/settings_screen.dart';
+import 'package:music/core/features/shared/models/album.dart';
 import 'package:music/core/features/splash/splash_screen.dart';
 import 'package:music/core/routes/app_routes.dart';
 
@@ -47,6 +53,23 @@ final routes = [
             name: AppRoutes.home,
             pageBuilder: (context, state) =>
                 NoTransitionPage(child: HomeScreen()),
+            routes: [
+              GoRoute(
+                path: AppRoutes.topArtists,
+                name: AppRoutes.topArtists,
+                builder: (context, state) => const TopArtists(),
+              ),
+              GoRoute(
+                path: AppRoutes.topTracks,
+                name: AppRoutes.topTracks,
+                builder: (context, state) => const TopTracks(),
+              ),
+              GoRoute(
+                path: AppRoutes.recentlyPlayed,
+                name: AppRoutes.recentlyPlayed,
+                builder: (context, state) => const RecentlyPlayedScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -58,6 +81,16 @@ final routes = [
             name: AppRoutes.albums,
             pageBuilder: (context, state) =>
                 NoTransitionPage(child: AlbumsScreen()),
+            routes: [
+              GoRoute(
+                path: AppRoutes.albumTracks,
+                name: AppRoutes.albumTracks,
+                builder: (context, state) {
+                  final album = state.extra as Album;
+                  return const AlbumTracksScreen();
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -80,6 +113,13 @@ final routes = [
             name: AppRoutes.playlist,
             pageBuilder: (context, state) =>
                 NoTransitionPage(child: PlaylistScreen()),
+            routes: [
+              GoRoute(
+                path: AppRoutes.playlistTracks,
+                name: AppRoutes.playlistTracks,
+                builder: (context, state) => const PlaylistTracksScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -92,6 +132,13 @@ final routes = [
             name: AppRoutes.settings,
             pageBuilder: (context, state) =>
                 NoTransitionPage(child: SettingsScreen()),
+            routes: [
+              GoRoute(
+                path: AppRoutes.folderSelection,
+                name: AppRoutes.folderSelection,
+                builder: (context, state) => const FolderSelectionScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -102,11 +149,7 @@ final routes = [
     name: AppRoutes.requestPermission,
     builder: (context, state) => const RequestPermissionScreen(),
   ),
-  GoRoute(
-    path: AppRoutes.folderSelection,
-    name: AppRoutes.folderSelection,
-    builder: (context, state) => const FolderSelectionScreen(),
-  ),
+
   GoRoute(
     path: AppRoutes.player,
     name: AppRoutes.player,

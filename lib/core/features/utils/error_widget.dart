@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:music/core/features/utils/empty_tracks.dart';
 import 'package:music/core/theme/app_theme.dart';
 
-class PremiumErrorState extends StatefulWidget {
+class ErrorState extends StatefulWidget {
   final String title;
   final String message;
   final String buttonText;
   final VoidCallback onRetry;
   final IconData? icon;
 
-  const PremiumErrorState({
+  const ErrorState({
     super.key,
     this.title = 'Something went wrong',
     required this.message,
@@ -21,10 +21,10 @@ class PremiumErrorState extends StatefulWidget {
   });
 
   @override
-  State<PremiumErrorState> createState() => _PremiumErrorStateState();
+  State<ErrorState> createState() => _ErrorStateState();
 }
 
-class _PremiumErrorStateState extends State<PremiumErrorState>
+class _ErrorStateState extends State<ErrorState>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _shakeAnimation;

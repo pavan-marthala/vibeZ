@@ -37,7 +37,7 @@ class VibezAudioHandler extends BaseAudioHandler
     );
   }
 
-  Future<void> playTrack(AudioTrack track) async {
+  Future<void> playTrack(AudioTrack track, {bool shouldPlay = true}) async {
     mediaItem.add(
       MediaItem(
         id: track.path,
@@ -52,7 +52,9 @@ class VibezAudioHandler extends BaseAudioHandler
     );
 
     await _player.setFilePath(track.path);
-    await _player.play();
+    if (shouldPlay) {
+      await _player.play();
+    }
   }
 
   @override

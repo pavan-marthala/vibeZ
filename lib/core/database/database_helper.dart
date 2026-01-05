@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:music/core/features/shared/models/folder_model.dart';
 import 'package:music/core/features/shared/models/listening_stats.dart';
 import 'package:music/core/features/shared/models/play_history.dart';
+import 'package:music/core/features/shared/models/playback_state.dart';
+import 'package:music/core/features/shared/models/playlist.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -21,7 +25,7 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 3, // Changed from 2 to 3
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -57,10 +61,59 @@ class DatabaseHelper {
       )
     ''');
 
+    /// Playback state table
+    await db.execute('''
+    CREATE TABLE playback_state (
+      id $idType,
+      trackId $textType,
+      trackPath $textType,
+      positionMs $intType,
+      savedAt $textType
+    )
+  ''');
+
+    /// Playlists table
+    await db.execute('''
+    CREATE TABLE playlists (
+      id $idType,
+      name $textType,
+      description TEXT,
+      createdAt $textType,
+      updatedAt $textType,
+      isDefault $intType DEFAULT 0
+    )
+  ''');
+
+    /// Playlist tracks table
+    await db.execute('''
+    CREATE TABLE playlist_tracks (
+      id $idType,
+      playlistId $intType,
+      trackId $textType,
+      addedAt $textType,
+      position $intType,
+      FOREIGN KEY (playlistId) REFERENCES playlists (id) ON DELETE CASCADE
+    )
+  ''');
+
     /// Create indexes for better query performance
     await db.execute('CREATE INDEX idx_track_id ON play_history(trackId)');
     await db.execute('CREATE INDEX idx_artist ON play_history(artist)');
     await db.execute('CREATE INDEX idx_played_at ON play_history(playedAt)');
+    await db.execute(
+      'CREATE INDEX idx_playlist_id ON playlist_tracks(playlistId)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_playlist_track_id ON playlist_tracks(trackId)',
+    );
+
+    await db.insert('playlists', {
+      'name': 'Favorites',
+      'description': 'Your favorite tracks',
+      'createdAt': DateTime.now().toIso8601String(),
+      'updatedAt': DateTime.now().toIso8601String(),
+      'isDefault': 1,
+    });
   }
 
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -88,14 +141,299 @@ class DatabaseHelper {
     }
 
     if (oldVersion < 3) {
-      // Add albumArtPath column
       try {
         await db.execute('''
           ALTER TABLE play_history ADD COLUMN albumArtPath TEXT
         ''');
       } catch (e) {
-        print('Column albumArtPath might already exist: $e');
+        log('Column albumArtPath might already exist: $e');
       }
+    }
+    if (oldVersion < 4) {
+      const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+      const textType = 'TEXT NOT NULL';
+      const intType = 'INTEGER NOT NULL';
+
+      await db.execute('''
+      CREATE TABLE playback_state (
+        id $idType,
+        trackId $textType,
+        trackPath $textType,
+        positionMs $intType,
+        savedAt $textType
+      )
+    ''');
+
+      await db.execute('''
+      CREATE TABLE playlists (
+        id $idType,
+        name $textType,
+        description TEXT,
+        createdAt $textType,
+        updatedAt $textType,
+        isDefault $intType DEFAULT 0
+      )
+    ''');
+
+      await db.execute('''
+      CREATE TABLE playlist_tracks (
+        id $idType,
+        playlistId $intType,
+        trackId $textType,
+        addedAt $textType,
+        position $intType,
+        FOREIGN KEY (playlistId) REFERENCES playlists (id) ON DELETE CASCADE
+      )
+    ''');
+
+      await db.execute(
+        'CREATE INDEX idx_playlist_id ON playlist_tracks(playlistId)',
+      );
+      await db.execute(
+        'CREATE INDEX idx_playlist_track_id ON playlist_tracks(trackId)',
+      );
+
+      await db.insert('playlists', {
+        'name': 'Favorites',
+        'description': 'Your favorite tracks',
+        'createdAt': DateTime.now().toIso8601String(),
+        'updatedAt': DateTime.now().toIso8601String(),
+        'isDefault': 1,
+      });
+    }
+  }
+
+  /// ==================== Playback State Methods ====================
+
+  Future<void> savePlaybackState(PlaybackState state) async {
+    final db = await database;
+    await db.delete('playback_state');
+    await db.insert('playback_state', state.toMap());
+  }
+
+  Future<PlaybackState?> getLastPlaybackState() async {
+    final db = await database;
+    final result = await db.query(
+      'playback_state',
+      orderBy: 'savedAt DESC',
+      limit: 1,
+    );
+
+    if (result.isEmpty) return null;
+    return PlaybackState.fromMap(result.first);
+  }
+
+  Future<void> clearPlaybackState() async {
+    final db = await database;
+    await db.delete('playback_state');
+  }
+
+  /// ==================== Playlist Methods ====================
+
+  Future<Playlist> createPlaylist(String name, {String? description}) async {
+    final db = await database;
+    final now = DateTime.now();
+
+    final id = await db.insert('playlists', {
+      'name': name,
+      'description': description,
+      'createdAt': now.toIso8601String(),
+      'updatedAt': now.toIso8601String(),
+      'isDefault': 0,
+    });
+
+    return Playlist(
+      id: id,
+      name: name,
+      description: description,
+      createdAt: now,
+      updatedAt: now,
+    );
+  }
+
+  Future<List<Playlist>> getAllPlaylists() async {
+    final db = await database;
+    final result = await db.rawQuery('''
+    SELECT 
+      p.*,
+      COUNT(pt.id) as trackCount
+    FROM playlists p
+    LEFT JOIN playlist_tracks pt ON p.id = pt.playlistId
+    GROUP BY p.id
+    ORDER BY p.isDefault DESC, p.createdAt DESC
+  ''');
+    return result.map((map) => Playlist.fromMap(map)).toList();
+  }
+
+  Future<Playlist?> getFavoritesPlaylist() async {
+    final db = await database;
+    final result = await db.query(
+      'playlists',
+      where: 'isDefault = ?',
+      whereArgs: [1],
+      limit: 1,
+    );
+
+    if (result.isEmpty) return null;
+
+    final trackCountResult = await db.rawQuery(
+      '''
+    SELECT COUNT(*) as count
+    FROM playlist_tracks
+    WHERE playlistId = ?
+  ''',
+      [result.first['id']],
+    );
+
+    final trackCount = trackCountResult.first['count'] as int;
+
+    return Playlist.fromMap({...result.first, 'trackCount': trackCount});
+  }
+
+  Future<Playlist?> getPlaylistById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'playlists',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (result.isEmpty) return null;
+
+    final trackCountResult = await db.rawQuery(
+      '''
+    SELECT COUNT(*) as count
+    FROM playlist_tracks
+    WHERE playlistId = ?
+  ''',
+      [id],
+    );
+
+    final trackCount = trackCountResult.first['count'] as int;
+
+    return Playlist.fromMap({...result.first, 'trackCount': trackCount});
+  }
+
+  Future<int> updatePlaylist(Playlist playlist) async {
+    final db = await database;
+    return db.update(
+      'playlists',
+      {...playlist.toMap(), 'updatedAt': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [playlist.id],
+    );
+  }
+
+  Future<int> deletePlaylist(int id) async {
+    final db = await database;
+    final playlist = await getPlaylistById(id);
+    if (playlist?.isDefault == true) {
+      throw Exception('Cannot delete default favorites playlist');
+    }
+    return await db.delete('playlists', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// ==================== Playlist Track Methods ====================
+
+  Future<void> addTrackToPlaylist(int playlistId, String trackId) async {
+    final db = await database;
+
+    final existing = await db.query(
+      'playlist_tracks',
+      where: 'playlistId = ? AND trackId = ?',
+      whereArgs: [playlistId, trackId],
+    );
+
+    if (existing.isNotEmpty) {
+      throw Exception('Track already in playlist');
+    }
+
+    final maxPosResult = await db.rawQuery(
+      '''
+    SELECT MAX(position) as maxPos
+    FROM playlist_tracks
+    WHERE playlistId = ?
+  ''',
+      [playlistId],
+    );
+
+    final maxPos = maxPosResult.first['maxPos'] as int? ?? -1;
+
+    await db.insert('playlist_tracks', {
+      'playlistId': playlistId,
+      'trackId': trackId,
+      'addedAt': DateTime.now().toIso8601String(),
+      'position': maxPos + 1,
+    });
+
+    /// Update playlist updatedAt
+    await db.update(
+      'playlists',
+      {'updatedAt': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [playlistId],
+    );
+  }
+
+  Future<void> removeTrackFromPlaylist(int playlistId, String trackId) async {
+    final db = await database;
+    await db.delete(
+      'playlist_tracks',
+      where: 'playlistId = ? AND trackId = ?',
+      whereArgs: [playlistId, trackId],
+    );
+
+    /// Update playlist updatedAt
+    await db.update(
+      'playlists',
+      {'updatedAt': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [playlistId],
+    );
+  }
+
+  Future<List<String>> getPlaylistTrackIds(int playlistId) async {
+    final db = await database;
+    final result = await db.query(
+      'playlist_tracks',
+      columns: ['trackId'],
+      where: 'playlistId = ?',
+      whereArgs: [playlistId],
+      orderBy: 'position ASC',
+    );
+
+    return result.map((row) => row['trackId'] as String).toList();
+  }
+
+  Future<bool> isTrackInPlaylist(int playlistId, String trackId) async {
+    final db = await database;
+    final result = await db.query(
+      'playlist_tracks',
+      where: 'playlistId = ? AND trackId = ?',
+      whereArgs: [playlistId, trackId],
+    );
+
+    return result.isNotEmpty;
+  }
+
+  Future<bool> isTrackInFavorites(String trackId) async {
+    final favPlaylist = await getFavoritesPlaylist();
+    if (favPlaylist == null) return false;
+    return await isTrackInPlaylist(favPlaylist.id!, trackId);
+  }
+
+  Future<void> toggleFavorite(String trackId) async {
+    final favPlaylist = await getFavoritesPlaylist();
+    if (favPlaylist == null) {
+      throw Exception('Favorites playlist not found');
+    }
+
+    final isInFavorites = await isTrackInPlaylist(favPlaylist.id!, trackId);
+
+    if (isInFavorites) {
+      await removeTrackFromPlaylist(favPlaylist.id!, trackId);
+    } else {
+      await addTrackToPlaylist(favPlaylist.id!, trackId);
     }
   }
 

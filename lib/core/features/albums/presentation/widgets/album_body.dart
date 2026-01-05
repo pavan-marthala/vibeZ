@@ -19,7 +19,7 @@ class AlbumBody extends StatelessWidget {
           return const LoadingWidget(message: "Scanning for albums...");
         }
         if (libraryState is MusicLibraryError) {
-          return PremiumErrorState(
+          return ErrorState(
             title: 'Oops! Something Went Wrong',
             message: libraryState.message,
             buttonText: 'Try Again',
