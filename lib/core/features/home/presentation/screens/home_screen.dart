@@ -2,13 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
 import 'package:music/core/features/shared/bloc/stats_bloc_bloc/stats_bloc.dart';
 import 'package:music/core/features/shared/models/listening_stats.dart';
+import 'package:music/core/features/shared/models/play_history.dart';
 import 'package:music/core/features/utils/loading_widget.dart';
 import 'package:music/core/features/utils/sized_context.dart';
+import 'package:music/core/routes/app_routes.dart';
 import 'package:music/core/theme/app_colors.dart';
 import 'package:music/core/theme/app_theme.dart';
 
@@ -277,7 +280,7 @@ class _RecentlyPlayedSection extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        // TODO: Navigate to full history
+                        context.push(AppRoutes.recentlyPlayed);
                       },
                       child: Text(
                         'See all',
@@ -308,7 +311,7 @@ class _RecentlyPlayedSection extends StatelessWidget {
 }
 
 class _RecentTrackCard extends StatelessWidget {
-  final dynamic track;
+  final PlayHistory track;
 
   const _RecentTrackCard({required this.track});
 

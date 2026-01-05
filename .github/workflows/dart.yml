@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write  
-  actions:  read  
+  contents: write
+  actions: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,12 +54,12 @@ jobs:
           mkdir -p artifacts
           cp build/app/outputs/flutter-apk/*.apk artifacts/
 
-      # ─────────────── ONLY ON TAGS ───────────────
+      #  ─────────────── ONLY ON TAGS ───────────────
       - name: 🏷️ Create or update Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: ncipollo/release-action@v1.16.0
         with:
-          tag:       ${{ github.ref_name }}
-          name:      Release ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           artifacts: artifacts/*.apk
-          token:     ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
