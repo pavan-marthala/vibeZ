@@ -47,19 +47,29 @@ jobs:
         run: flutter test --coverage
 
       - name: 🏗️ Build APKs
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
 
       - name: 📦 Prepare artifacts
         run: |
           mkdir -p artifacts
-          cp build/app/outputs/flutter-apk/*.apk artifacts/
+          cp build/app/outputs/flutter-apk/app-release.apk artifacts/
 
-      #  ─────────────── ONLY ON TAGS ───────────────
-      - name: 🏷️ Create or update Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: ncipollo/release-action@v1.16.0
-        with:
-          tag: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          artifacts: artifacts/*.apk
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Authenticate Firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > firebase-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$PWD/firebase-key.json
+
+      - name: Upload APK to Firebase App Distribution
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
+        run: |
+          firebase appdistribution:distribute \
+            artifacts/app-release.apk \
+            --app "${{ secrets.FIREBASE_APP_ID }}" \
+            --testers "${{ secrets.FIREBASE_TESTERS }}" \
+            --release-notes "CI build from GitHub Actions - ${{ github.sha }}"

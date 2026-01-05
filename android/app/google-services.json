@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "258665708272",
+    "project_id": "vibez-4b308",
+    "storage_bucket": "vibez-4b308.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:258665708272:android:154cc317a1ae97e7e1e035",
+        "android_client_info": {
+          "package_name": "app.vibez.music"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcBLMHkhdZoPfMOC--NOIXAceaxxtz7WM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
