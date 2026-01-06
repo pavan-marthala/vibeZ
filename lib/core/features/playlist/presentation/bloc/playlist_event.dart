@@ -1,3 +1,4 @@
+// playlist_event.dart
 part of 'playlist_bloc.dart';
 
 sealed class PlaylistEvent extends Equatable {
@@ -20,30 +21,30 @@ class CreatePlayList extends PlaylistEvent {
 }
 
 class GetById extends PlaylistEvent {
-  final int id;
+  final int playlistId;
 
-  const GetById({required this.id});
+  const GetById(this.playlistId);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [playlistId];
 }
 
 class Update extends PlaylistEvent {
   final Playlist playlist;
 
-  const Update({required this.playlist});
+  const Update(this.playlist);
 
   @override
   List<Object?> get props => [playlist];
 }
 
 class Delete extends PlaylistEvent {
-  final int id;
+  final int playlistId;
 
-  const Delete({required this.id});
+  const Delete(this.playlistId);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [playlistId];
 }
 
 class AddTrack extends PlaylistEvent {
@@ -69,7 +70,7 @@ class RemoveTrack extends PlaylistEvent {
 class GetTrackIds extends PlaylistEvent {
   final int playlistId;
 
-  const GetTrackIds({required this.playlistId});
+  const GetTrackIds(this.playlistId);
 
   @override
   List<Object?> get props => [playlistId];
@@ -78,13 +79,8 @@ class GetTrackIds extends PlaylistEvent {
 class IsTrackInPlaylist extends PlaylistEvent {
   final int playlistId;
   final String trackId;
-  final bool Function(bool) callback;
 
-  const IsTrackInPlaylist({
-    required this.playlistId,
-    required this.trackId,
-    required this.callback,
-  });
+  const IsTrackInPlaylist({required this.playlistId, required this.trackId});
 
   @override
   List<Object?> get props => [playlistId, trackId];
@@ -92,13 +88,18 @@ class IsTrackInPlaylist extends PlaylistEvent {
 
 class IsTrackInFavorites extends PlaylistEvent {
   final String trackId;
-  final bool Function(bool) callback;
 
-  const IsTrackInFavorites({required this.trackId, required this.callback});
+  const IsTrackInFavorites(this.trackId);
+
+  @override
+  List<Object?> get props => [trackId];
 }
 
 class ToggleFavorite extends PlaylistEvent {
   final String trackId;
 
-  const ToggleFavorite({required this.trackId});
+  const ToggleFavorite(this.trackId);
+
+  @override
+  List<Object?> get props => [trackId];
 }

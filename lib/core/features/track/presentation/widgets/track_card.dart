@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/utils/app_utils.dart';
+import 'package:music/core/features/utils/favorite_button.dart';
+import 'package:music/core/features/utils/track_options_menu.dart';
+import 'package:music/core/theme/app_theme.dart';
 
 class TrackCard extends StatelessWidget {
   const TrackCard({
@@ -20,6 +23,7 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.theme.appColors;
     return Container(
       decoration: BoxDecoration(
         color: isPlayingThisTrack ? Colors.white.withValues(alpha: 0.4) : null,
@@ -58,6 +62,7 @@ class TrackCard extends StatelessWidget {
                   ],
                 ),
               ),
+              FavoriteButton(track: track),
               IconButton(
                 icon: Icon(
                   isPlayingThisTrack && isPlaying
@@ -67,6 +72,10 @@ class TrackCard extends StatelessWidget {
                   color: Colors.white,
                 ),
                 onPressed: onPlayPause,
+              ),
+              IconButton(
+                icon: Icon(Icons.more_vert, color: colors.textSecondary),
+                onPressed: () => showTrackOptionsMenu(context, track),
               ),
             ],
           ),
