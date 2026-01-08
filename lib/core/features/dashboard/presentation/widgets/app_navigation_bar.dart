@@ -98,11 +98,15 @@ class AppNavigationBar extends StatelessWidget {
                                   child: item.icon,
                                 ),
                                 if (isSelected)
-                                  Text(
-                                    item.title,
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
+                                  Expanded(
+                                    child: Text(
+                                      item.title,
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 16,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                               ],

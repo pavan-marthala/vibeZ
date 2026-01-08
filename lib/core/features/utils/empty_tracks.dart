@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:music/core/features/utils/app_utils.dart';
+import 'package:music/core/features/utils/sized_context.dart';
 import 'package:music/core/theme/app_theme.dart';
 import 'dart:math' as math;
 
@@ -18,7 +19,7 @@ class NoMusicFoundState extends StatelessWidget {
 
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32.0),
+        padding: EdgeInsets.only(left: 32.0, right: 32.0, top: 32.0, bottom: context.viewInsets.bottom+160),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

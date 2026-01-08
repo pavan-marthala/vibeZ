@@ -142,6 +142,7 @@ class _StatsSection extends StatelessWidget {
                         value: '${stats.totalPlays}',
                         label: 'Total Plays',
                         color: colors.primary,
+                        onTap: () => context.goNamed(AppRoutes.recentlyPlayed),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -151,6 +152,7 @@ class _StatsSection extends StatelessWidget {
                         value: _formatDuration(stats.totalListeningTime),
                         label: 'Listening Time',
                         color: colors.secondary,
+                        onTap: () => context.goNamed(AppRoutes.recentlyPlayed),
                       ),
                     ),
                   ],
@@ -164,6 +166,7 @@ class _StatsSection extends StatelessWidget {
                         value: '${stats.uniqueTracks}',
                         label: 'Unique Tracks',
                         color: colors.secondary,
+                        onTap: () => context.go(AppRoutes.tracks),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -173,6 +176,7 @@ class _StatsSection extends StatelessWidget {
                         value: '${stats.uniqueArtists}',
                         label: 'Artists',
                         color: colors.secondary,
+                        onTap: () => context.goNamed(AppRoutes.topArtists),
                       ),
                     ),
                   ],
@@ -197,52 +201,61 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String label;
   final Color color;
+  final VoidCallback onTap;
 
   const _StatCard({
     required this.icon,
     required this.value,
     required this.label,
     required this.color,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = context.theme.appColors;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surfaceLight,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 20),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.surfaceLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.border, width: 1),
           ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: context.theme.appTypography.headlineMedium.copyWith(
-              color: colors.textPrimary,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: context.theme.appTypography.headlineMedium.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: context.theme.appTypography.bodySmall.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: context.theme.appTypography.bodySmall.copyWith(
-              color: colors.textSecondary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -280,7 +293,7 @@ class _RecentlyPlayedSection extends StatelessWidget {
                     ),
                     TextButton(
                       onPressed: () {
-                        context.push(AppRoutes.recentlyPlayed);
+                        context.goNamed(AppRoutes.recentlyPlayed);
                       },
                       child: Text(
                         'See all',
@@ -340,10 +353,10 @@ class _RecentTrackCard extends StatelessWidget {
                       ? Image.file(
                           File(track.albumArtPath!),
                           width: double.infinity,
-                          height: 80,
+                          height: 70,
                           alignment: .topCenter,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, _) =>
                               _buildDefaultArt(colors),
                         )
                       : _buildDefaultArt(colors),
@@ -452,7 +465,7 @@ class _TopTrackItem extends StatelessWidget {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildDefaultArt(colors),
+                      errorBuilder: (_, _, _) => _buildDefaultArt(colors),
                     )
                   : _buildDefaultArt(colors),
             ),
@@ -556,7 +569,9 @@ class _TopArtistCard extends StatelessWidget {
     return SizedBox(
       width: 130,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          
+        },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

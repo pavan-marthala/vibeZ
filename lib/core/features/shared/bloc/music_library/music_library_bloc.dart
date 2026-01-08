@@ -29,13 +29,17 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
   ) async {
     emit(MusicLibraryLoading());
     try {
-      final tracks = <AudioTrack>[];
+      final uniqueTracks = <String, AudioTrack>{};
       final storageDirs = await _getAllStorageDirectories();
+      
       for (final dir in storageDirs) {
         final audioFiles = await _scanDirectoryForAudioFiles(dir);
-        tracks.addAll(audioFiles);
+        for (final track in audioFiles) {
+          uniqueTracks[track.path] = track;
+        }
       }
 
+      final tracks = uniqueTracks.values.toList();
       // Group tracks into albums
       final albums = _groupTracksIntoAlbums(tracks);
 

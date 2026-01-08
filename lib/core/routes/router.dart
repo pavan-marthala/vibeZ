@@ -8,12 +8,14 @@ import 'package:music/core/features/home/presentation/screens/home_screen.dart';
 import 'package:music/core/features/home/presentation/screens/recently_played_screen.dart';
 import 'package:music/core/features/home/presentation/screens/top_artists.dart';
 import 'package:music/core/features/home/presentation/screens/top_tracks.dart';
+import 'package:music/core/features/home/presentation/screens/artist_tracks_screen.dart';
 import 'package:music/core/features/player/presentation/screens/full_screen_player.dart';
 import 'package:music/core/features/playlist/presentation/playlist_screen.dart';
 import 'package:music/core/features/playlist/presentation/playlist_tracks_screen.dart';
 import 'package:music/core/features/request_permission/screens/request_permission_screen.dart';
 import 'package:music/core/features/settings/screens/settings_screen.dart';
 import 'package:music/core/features/shared/models/album.dart';
+import 'package:music/core/features/shared/models/playlist.dart';
 import 'package:music/core/features/splash/splash_screen.dart';
 import 'package:music/core/routes/app_routes.dart';
 
@@ -58,6 +60,16 @@ final routes = [
                 path: AppRoutes.topArtists,
                 name: AppRoutes.topArtists,
                 builder: (context, state) => const TopArtists(),
+                routes: [
+                  GoRoute(
+                    path: "artist-tracks", // Relative path
+                    name: AppRoutes.artistTracks,
+                    builder: (context, state) {
+                      final artistName = state.extra as String;
+                      return ArtistTracksScreen(artistName: artistName);
+                    },
+                  ),
+                ],
               ),
               GoRoute(
                 path: AppRoutes.topTracks,
@@ -83,11 +95,11 @@ final routes = [
                 NoTransitionPage(child: AlbumsScreen()),
             routes: [
               GoRoute(
-                path: AppRoutes.albumTracks,
+                 path: "tracks",
                 name: AppRoutes.albumTracks,
                 builder: (context, state) {
                   final album = state.extra as Album;
-                  return const AlbumTracksScreen();
+                  return AlbumTracksScreen(album: album);
                 },
               ),
             ],
@@ -115,9 +127,12 @@ final routes = [
                 NoTransitionPage(child: PlaylistScreen()),
             routes: [
               GoRoute(
-                path: AppRoutes.playlistTracks,
+                path: "tracks",
                 name: AppRoutes.playlistTracks,
-                builder: (context, state) => const PlaylistTracksScreen(),
+                builder: (context, state) {
+                  final playlist = state.extra as Playlist?;
+                  return PlaylistTracksScreen(playlist: playlist);
+                },
               ),
             ],
           ),

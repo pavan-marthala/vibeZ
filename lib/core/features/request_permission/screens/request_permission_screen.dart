@@ -22,154 +22,156 @@ class RequestPermissionScreen extends StatelessWidget {
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.music_note,
-                  size: 100,
-                  color: Color(0xFF1ED760),
-                ),
-                const SizedBox(height: 32),
-                const Text(
-                  'Welcome to vibeZ',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.music_note,
+                    size: 100,
+                    color: Color(0xFF1ED760),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  Platform.isIOS
-                      ? 'vibeZ needs access to your music library and notifications to work properly'
-                      : 'We need some permissions to provide you the best music experience',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFFB3B3B3),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Welcome to vibeZ',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
-                BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
-                  builder: (context, state) {
-                    return Column(
-                      children: [
-                        _PermissionItem(
-                          icon: Icons.audiotrack,
-                          title: Platform.isIOS
-                              ? 'Music Library'
-                              : 'Storage Access',
-                          description: Platform.isIOS
-                              ? 'Access your music library'
-                              : 'Read and play your music files',
-                          isGranted: state.isAudioGranted,
-                        ),
-                        const SizedBox(height: 16),
-                        _PermissionItem(
-                          icon: Icons.notifications,
-                          title: 'Notifications',
-                          description: 'Show playback controls',
-                          isGranted: state.isNotificationGranted,
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                const SizedBox(height: 48),
-                BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
-                  builder: (context, state) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: state.allGranted
-                                ? null
-                                : () {
-                                    context.read<RequestPermissionBloc>().add(
-                                      RequestPermission(),
-                                    );
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF1ED760),
-                              foregroundColor: Colors.black,
-                              disabledBackgroundColor: const Color(0xFF282828),
-                              disabledForegroundColor: const Color(0xFFB3B3B3),
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                            ),
-                            child: Text(
-                              state.allGranted
-                                  ? '✓ All Permissions Granted'
-                                  : 'Grant Permissions',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                  const SizedBox(height: 16),
+                  Text(
+                    Platform.isIOS
+                        ? 'vibeZ needs access to your music library and notifications to work properly'
+                        : 'We need some permissions to provide you the best music experience',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFFB3B3B3),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 48),
+                  BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
+                    builder: (context, state) {
+                      return Column(
+                        children: [
+                          _PermissionItem(
+                            icon: Icons.audiotrack,
+                            title: Platform.isIOS
+                                ? 'Music Library'
+                                : 'Storage Access',
+                            description: Platform.isIOS
+                                ? 'Access your music library'
+                                : 'Read and play your music files',
+                            isGranted: state.isAudioGranted,
                           ),
-                        ),
-                        if (state.hasCheckedPermissions &&
-                            !state.allGranted) ...[
                           const SizedBox(height: 16),
+                          _PermissionItem(
+                            icon: Icons.notifications,
+                            title: 'Notifications',
+                            description: 'Show playback controls',
+                            isGranted: state.isNotificationGranted,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 48),
+                  BlocBuilder<RequestPermissionBloc, RequestPermissionState>(
+                    builder: (context, state) {
+                      return Column(
+                        children: [
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () async {
-                                await openAppSettings();
-                                // Wait a bit and then check permissions
-                                await Future.delayed(
-                                  const Duration(milliseconds: 500),
-                                );
-                                if (context.mounted) {
-                                  context.read<RequestPermissionBloc>().add(
-                                    CheckPermissionStatus(),
-                                  );
-                                }
-                              },
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF1ED760),
-                                side: const BorderSide(
-                                  color: Color(0xFF1ED760),
-                                  width: 2,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
+                            child: ElevatedButton(
+                              onPressed: state.allGranted
+                                  ? null
+                                  : () {
+                                      context.read<RequestPermissionBloc>().add(
+                                        RequestPermission(),
+                                      );
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1ED760),
+                                foregroundColor: Colors.black,
+                                disabledBackgroundColor: const Color(0xFF282828),
+                                disabledForegroundColor: const Color(0xFFB3B3B3),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(50),
                                 ),
                               ),
-                              child: const Text(
-                                'Open Settings',
-                                style: TextStyle(
+                              child: Text(
+                                state.allGranted
+                                    ? '✓ All Permissions Granted'
+                                    : 'Grant Permissions',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            Platform.isIOS
-                                ? 'Open Settings → vibeZ → Enable Media & Apple Music and Notifications'
-                                : 'Open Settings to manually enable permissions',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF6A6A6A),
+                          if (state.hasCheckedPermissions &&
+                              !state.allGranted) ...[
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  await openAppSettings();
+                                  // Wait a bit and then check permissions
+                                  await Future.delayed(
+                                    const Duration(milliseconds: 500),
+                                  );
+                                  if (context.mounted) {
+                                    context.read<RequestPermissionBloc>().add(
+                                      CheckPermissionStatus(),
+                                    );
+                                  }
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF1ED760),
+                                  side: const BorderSide(
+                                    color: Color(0xFF1ED760),
+                                    width: 2,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Open Settings',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
+                            const SizedBox(height: 16),
+                            Text(
+                              Platform.isIOS
+                                  ? 'Open Settings → vibeZ → Enable Media & Apple Music and Notifications'
+                                  : 'Open Settings to manually enable permissions',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF6A6A6A),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ],
-                      ],
-                    );
-                  },
-                ),
-              ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

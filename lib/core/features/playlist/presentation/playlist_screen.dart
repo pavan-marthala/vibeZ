@@ -7,7 +7,9 @@ import 'package:music/core/features/utils/error_widget.dart';
 import 'package:music/core/features/utils/gradient_background_painter.dart';
 import 'package:music/core/features/utils/loading_widget.dart';
 import 'package:music/core/features/utils/sized_context.dart';
+import 'package:music/core/routes/app_routes.dart';
 import 'package:music/core/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 
 class PlaylistScreen extends StatelessWidget {
   const PlaylistScreen({super.key});
@@ -137,9 +139,9 @@ class PlaylistScreen extends StatelessWidget {
                                 return _PlaylistCard(
                                   playlist: playlist,
                                   onTap: () {
-                                    // TODO: Navigate to playlist details
-                                    context.read<PlaylistBloc>().add(
-                                      GetById(playlist.id!),
+                                    context.goNamed(
+                                      AppRoutes.playlistTracks,
+                                      extra: playlist,
                                     );
                                   },
                                   onDelete: playlist.isDefault

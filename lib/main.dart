@@ -4,6 +4,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:music/core/features/error/error_404_page.dart';
 import 'package:music/core/features/folder_selection/bloc/folder_selection_bloc.dart';
 import 'package:music/core/features/playlist/presentation/bloc/playlist_bloc.dart';
 import 'package:music/core/features/request_permission/bloc/request_permission_bloc.dart';
@@ -63,6 +64,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _router = GoRouter(
       navigatorKey: rootNavigatorKey,
+      errorBuilder: (context, state) {
+        return const Error404Page();
+      },
       debugLogDiagnostics: true,
       initialLocation: AppRoutes.splash,
       refreshListenable: GoRouterRefreshStream(

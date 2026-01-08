@@ -566,7 +566,7 @@ class DatabaseHelper {
             albumArtPath = artResult.first['albumArtPath'] as String;
           }
         } catch (e) {
-          print('Error fetching album art: $e');
+          log('Error fetching album art: $e');
         }
       }
 

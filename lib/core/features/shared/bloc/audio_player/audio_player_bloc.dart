@@ -90,7 +90,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     try {
       await DatabaseHelper.instance.savePlaybackState(playbackState);
     } catch (e) {
-      print('Error saving playback state: $e');
+      log('Error saving playback state: $e');
     }
   }
 
@@ -263,7 +263,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     try {
       await DatabaseHelper.instance.insertPlayHistory(history);
     } catch (e) {
-      print('Error saving play history: $e');
+      log('Error saving play history: $e');
     }
   }
 }

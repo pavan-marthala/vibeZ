@@ -1,37 +1,33 @@
 class AppRoutes {
   AppRoutes._();
 
-  static String get home => "/";
+  // Home
+  static const String home = "/";
+  static const String recentlyPlayed = "recently-played";
+  static const String topTracks = "top-tracks";
+  static const String topArtists = "top-artists";
+  static const String artistTracks = "artist-tracks";
 
-  static String get recentlyPlayed => "/recently-played";
+  // Albums
+  static const String albums = "/albums";
+  static const String albumTracks = "album-tracks";
 
-  static String get topTracks => "/top-tracks";
+  // Tracks (tab)
+  static const String tracks = "/tracks";
 
-  static String get topArtists => "/top-artists";
+  // Playlist
+  static const String playlist = "/playlist";
+  static const String playlistTracks = "playlist-tracks"; 
 
-  static String get albums => "/albums";
+  // Settings
+  static const String settings = "/settings";
+  static const String folderSelection = "folder-selection";
 
-  static String get albumTracks => "/albums/tracks";
-
-  static String get tracks => "/tracks";
-
-  static String get playlist => "/playlist";
-
-  static String get playlistTracks => "/playlist/tracks";
-
-  static String get onboard => "/on-boarding";
-
-  static String get requestPermission => "/request-permission";
-
-  static String get folderSelection => "/folder-selection";
-
-  static String get splash => "/splash";
-
-  static String get player => "/player";
-
-  static String get settings => "/settings";
-
-  static String get search => "/search";
-
-  static String get searchResults => "/search/results";
+  // Other
+  static const String splash = "/splash";
+  static const String requestPermission = "/request-permission";
+  static const String player = "/player";
+  static const String onboard = "/on-boarding";
+  static const String search = "/search";
+  static const String searchResults = "/search/results";
 }

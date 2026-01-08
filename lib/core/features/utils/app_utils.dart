@@ -21,6 +21,8 @@ Widget buildAlbumArt(AudioTrack track, {double borderRadius = 6}) {
   );
 }
 
+
+
 String formatDuration(Duration d) {
   final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
   final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');

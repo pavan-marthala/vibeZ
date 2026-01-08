@@ -142,7 +142,7 @@ class _MiniControls extends StatelessWidget {
       ),
       builder: (context, data) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           child: Row(
             children: [
               Hero(
