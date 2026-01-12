@@ -17,3 +17,13 @@ class SearchAudioFiles extends MusicLibraryEvent {
   @override
   List<Object> get props => [query];
 }
+
+class SortTracks extends MusicLibraryEvent {
+  final SortOption option;
+  final SortOrder order;
+
+  const SortTracks(this.option, this.order);
+
+  @override
+  List<Object> get props => [option, order];
+}

@@ -19,6 +19,7 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     on<LoadAudioFiles>(_onLoadAudioFiles);
     on<RefreshAudioFiles>(_onRefreshAudioFiles);
     on<SearchAudioFiles>(_onSearchAudioFiles);
+    on<SortTracks>(_onSortTracks);
   }
 
   final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
@@ -31,7 +32,7 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     try {
       final uniqueTracks = <String, AudioTrack>{};
       final storageDirs = await _getAllStorageDirectories();
-      
+
       for (final dir in storageDirs) {
         final audioFiles = await _scanDirectoryForAudioFiles(dir);
         for (final track in audioFiles) {
@@ -82,7 +83,8 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
             (track) =>
                 track.title.toLowerCase().contains(query) ||
                 track.artist.toLowerCase().contains(query) ||
-                track.album.toLowerCase().contains(query),
+                track.album.toLowerCase().contains(query) ||
+                (track.year?.toString().contains(query) ?? false),
           )
           .toList();
 
@@ -92,6 +94,59 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
     } catch (e) {
       emit(MusicLibraryError('Failed to search audio files'));
     }
+  }
+
+  Future<void> _onSortTracks(
+    SortTracks event,
+    Emitter<MusicLibraryState> emit,
+  ) async {
+    if (state is! MusicLibraryLoaded) return;
+    final currentState = state as MusicLibraryLoaded;
+
+    final sortedTracks = List<AudioTrack>.from(currentState.tracks);
+
+    sortedTracks.sort((a, b) {
+      int comparison = 0;
+      switch (event.option) {
+        case SortOption.title:
+          comparison = a.title.toLowerCase().compareTo(b.title.toLowerCase());
+          break;
+        case SortOption.artist:
+          comparison = a.artist.toLowerCase().compareTo(b.artist.toLowerCase());
+          break;
+        case SortOption.album:
+          comparison = a.album.toLowerCase().compareTo(b.album.toLowerCase());
+          break;
+        case SortOption.year:
+          comparison = (a.year ?? 0).compareTo(b.year ?? 0);
+          break;
+        case SortOption.dateAdded:
+          comparison = (a.dateAdded ?? DateTime(0)).compareTo(
+            b.dateAdded ?? DateTime(0),
+          );
+          break;
+        case SortOption.dateModified:
+          comparison = (a.dateModified ?? DateTime(0)).compareTo(
+            b.dateModified ?? DateTime(0),
+          );
+          break;
+      }
+      return event.order == SortOrder.ascending ? comparison : -comparison;
+    });
+
+    // Re-group albums based on sorted tracks (optional, but albums list usually stays strictly alphabetical or we can sort albums too?
+    // The prompt asked for "in tracks page... sorting". Usually this affects the *track list* display.
+    // The `MusicLibraryBloc` emits `tracks` and `albums`.
+    // If we sort tracks, the `tracks` list is updated.
+
+    emit(
+      MusicLibraryLoaded(
+        sortedTracks,
+        currentState.albums,
+        event.option,
+        event.order,
+      ),
+    );
   }
 
   List<Album> _groupTracksIntoAlbums(List<AudioTrack> tracks) {
@@ -197,6 +252,14 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
           : 'Unknown Album';
 
       final duration = metadata.duration ?? Duration.zero;
+      final year = metadata.year?.year;
+
+      DateTime dateModified;
+      try {
+        dateModified = await file.lastModified();
+      } catch (_) {
+        dateModified = DateTime.now();
+      }
 
       return AudioTrack(
         id: file.path.hashCode.toString(),
@@ -206,6 +269,9 @@ class MusicLibraryBloc extends Bloc<MusicLibraryEvent, MusicLibraryState> {
         duration: duration,
         path: file.path,
         albumArtPath: artPath,
+        dateAdded: dateModified, // Approximating dateAdded as dateModified
+        dateModified: dateModified,
+        year: year,
       );
     } catch (e) {
       return null;

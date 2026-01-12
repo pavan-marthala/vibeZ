@@ -1,13 +1,18 @@
+// ignore_for_file: unused_field
+
 import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:music/core/database/database_helper.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/shared/models/play_history.dart';
 import 'package:music/core/features/shared/models/playback_state.dart';
+import 'package:music/core/features/utils/app_utils.dart';
 import 'package:music/core/service/vibez_audio_handler.dart';
 
 part 'audio_player_event.dart';
@@ -18,6 +23,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   late final StreamSubscription _playerStateSub;
   late final StreamSubscription _positionSub;
   late final StreamSubscription _durationSub;
+  late final StreamSubscription _volumeSub;
   DateTime? _trackStartTime;
   int _totalPlayDuration = 0;
 
@@ -26,6 +32,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     on<PauseTrack>((_, _) => handler.pause());
     on<ResumeTrack>((_, _) => handler.play());
     on<SeekTrack>((e, _) => handler.seek(e.position));
+    on<SetVolume>((e, _) => handler.setVolume(e.volume));
     on<StopTrack>(_onStopTrack);
     on<NextTrack>(_onNextTrack);
     on<PreviousTrack>(_onPreviousTrack);
@@ -53,6 +60,10 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       if (dur != null) add(_UpdateDuration(dur));
     });
 
+    _volumeSub = handler.player.volumeStream.listen((vol) {
+      add(_UpdateVolume(vol));
+    });
+
     on<_UpdateIsPlaying>(
       (e, emit) => emit(state.copyWith(isPlaying: e.isPlaying)),
     );
@@ -64,6 +75,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     on<_UpdateDuration>(
       (e, emit) => emit(state.copyWith(duration: e.duration)),
     );
+
+    on<_UpdateVolume>((e, emit) => emit(state.copyWith(volume: e.volume)));
   }
 
   DateTime? _lastSaveTime;
@@ -134,18 +147,33 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     Emitter<AudioPlayerState> emit,
   ) async {
     try {
-      final index = event.queue.indexWhere(
-        (track) => track.id == event.track.id,
-      );
+      var track = event.track;
+      final index = event.queue.indexWhere((t) => t.id == track.id);
       if (state.current != null && _trackStartTime != null) {
         await _savePlayHistory(state.current!);
+      }
+      if (track.albumArtPath != null && track.ambientColors == null) {
+        final colorInts = await compute(
+          extractDominantColorsKMeans,
+          track.albumArtPath!,
+        );
+
+        final colors = colorInts
+            .map((v) => Color(v))
+            .where(isGoodAmbient)
+            .map(enhanceAmbient)
+            .toList();
+
+        if (colors.isNotEmpty) {
+          track = track.copyWith(ambientColors: colors.take(4).toList());
+        }
       }
 
       _trackStartTime = DateTime.now();
       _totalPlayDuration = 0;
       emit(
         state.copyWith(
-          current: event.track,
+          current: track,
           queue: event.queue,
           currentIndex: index,
           position: Duration.zero,
@@ -153,7 +181,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       );
 
       /// Play the track
-      await handler.playTrack(event.track);
+      await handler.playTrack(track);
     } catch (e) {
       log('Error playing track: $e');
       emit(state.copyWith(isPlaying: false, clearCurrent: true));
@@ -170,9 +198,25 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
     if (nextIndex >= state.queue.length) return;
 
-    final nextTrack = state.queue[nextIndex];
+    var nextTrack = state.queue[nextIndex];
     if (state.current != null && _trackStartTime != null) {
       await _savePlayHistory(state.current!);
+    }
+    if (nextTrack.albumArtPath != null && nextTrack.ambientColors == null) {
+      final colorInts = await compute(
+        extractDominantColorsKMeans,
+        nextTrack.albumArtPath!,
+      );
+
+      final colors = colorInts
+          .map((v) => Color(v))
+          .where(isGoodAmbient)
+          .map(enhanceAmbient)
+          .toList();
+
+      if (colors.isNotEmpty) {
+        nextTrack = nextTrack.copyWith(ambientColors: colors.take(4).toList());
+      }
     }
 
     _trackStartTime = DateTime.now();
@@ -238,6 +282,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     _playerStateSub.cancel();
     _positionSub.cancel();
     _durationSub.cancel();
+    _volumeSub.cancel();
     return super.close();
   }
 

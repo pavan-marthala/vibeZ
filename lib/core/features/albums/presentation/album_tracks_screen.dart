@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/models/album.dart';
+import 'package:music/core/features/utils/app_haptics.dart';
 import 'package:music/core/theme/app_theme.dart';
 
 class AlbumTracksScreen extends StatelessWidget {
@@ -27,11 +28,8 @@ class AlbumTracksScreen extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                   if (album.albumArtPath != null)
-                    Image.file(
-                      File(album.albumArtPath!),
-                      fit: BoxFit.cover,
-                    )
+                  if (album.albumArtPath != null)
+                    Image.file(File(album.albumArtPath!), fit: BoxFit.cover)
                   else
                     Container(
                       color: colors.surfaceDark,
@@ -64,20 +62,19 @@ class AlbumTracksScreen extends StatelessWidget {
                       children: [
                         Text(
                           album.name,
-                          style:
-                              context.theme.appTypography.headlineMedium.copyWith(
-                            color: colors.textPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: context.theme.appTypography.headlineMedium
+                              .copyWith(
+                                color: colors.textPrimary,
+                                fontWeight: FontWeight.bold,
+                              ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           album.artist,
-                          style: context.theme.appTypography.titleMedium.copyWith(
-                            color: colors.textSecondary,
-                          ),
+                          style: context.theme.appTypography.titleMedium
+                              .copyWith(color: colors.textSecondary),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -101,7 +98,10 @@ class AlbumTracksScreen extends StatelessWidget {
                 ),
                 child: const Icon(Icons.arrow_back, color: Colors.white),
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                AppHaptics.tap();
+                Navigator.pop(context);
+              },
             ),
           ),
           SliverToBoxAdapter(
@@ -112,9 +112,10 @@ class AlbumTracksScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                         context.read<AudioPlayerBloc>().add(
-                              PlayTrack(album.tracks.first, album.tracks),
-                            );
+                        AppHaptics.tap();
+                        context.read<AudioPlayerBloc>().add(
+                          PlayTrack(album.tracks.first, album.tracks),
+                        );
                       },
                       icon: const Icon(Icons.play_arrow),
                       label: const Text('Play All'),
@@ -132,10 +133,14 @@ class AlbumTracksScreen extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
+                        AppHaptics.tap();
                         // Implement shuffle if needed, or mapped to Play with shuffle logic
-                         context.read<AudioPlayerBloc>().add(
-                              PlayTrack(album.tracks.first, [...album.tracks]..shuffle()),
-                            );
+                        context.read<AudioPlayerBloc>().add(
+                          PlayTrack(
+                            album.tracks.first,
+                            [...album.tracks]..shuffle(),
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.shuffle),
                       label: const Text('Shuffle'),
@@ -154,45 +159,43 @@ class AlbumTracksScreen extends StatelessWidget {
             ),
           ),
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final track = album.tracks[index];
-                return ListTile(
-                  leading: Text(
-                    '${index + 1}',
-                    style: context.theme.appTypography.bodyMedium.copyWith(
-                      color: colors.textSecondary,
-                    ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final track = album.tracks[index];
+              return ListTile(
+                leading: Text(
+                  '${index + 1}',
+                  style: context.theme.appTypography.bodyMedium.copyWith(
+                    color: colors.textSecondary,
                   ),
-                  title: Text(
-                    track.title,
-                    style: context.theme.appTypography.bodyLarge.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                ),
+                title: Text(
+                  track.title,
+                  style: context.theme.appTypography.bodyLarge.copyWith(
+                    color: colors.textPrimary,
                   ),
-                  subtitle: Text(
-                    track.artist,
-                    style: context.theme.appTypography.bodySmall.copyWith(
-                      color: colors.textSecondary,
-                    ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  track.artist,
+                  style: context.theme.appTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
                   ),
-                  trailing: Text(
-                    _formatTrackDuration(track.duration),
-                    style: context.theme.appTypography.bodySmall.copyWith(
-                      color: colors.textSecondary,
-                    ),
+                ),
+                trailing: Text(
+                  _formatTrackDuration(track.duration),
+                  style: context.theme.appTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
                   ),
-                  onTap: () {
-                    context.read<AudioPlayerBloc>().add(
-                          PlayTrack(track, album.tracks),
-                        );
-                  },
-                );
-              },
-              childCount: album.tracks.length,
-            ),
+                ),
+                onTap: () {
+                  AppHaptics.tap();
+                  context.read<AudioPlayerBloc>().add(
+                    PlayTrack(track, album.tracks),
+                  );
+                },
+              );
+            }, childCount: album.tracks.length),
           ),
           const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
         ],

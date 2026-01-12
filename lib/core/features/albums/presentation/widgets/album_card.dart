@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:music/core/features/shared/models/album.dart';
+import 'package:music/core/features/utils/app_haptics.dart';
 import 'package:music/core/features/utils/app_utils.dart';
 import 'package:music/core/theme/app_colors.dart';
 import 'package:music/core/theme/app_theme.dart';
@@ -25,13 +26,13 @@ class AlbumCard extends StatelessWidget {
       child: Stack(
         children: [
           album.albumArtPath != null
-                      ? Image.file(
-                          File(album.albumArtPath!),
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              buildDefaultArt(colors,album,typography),
-                        )
-                      :buildDefaultArt(colors,album,typography),
+              ? Image.file(
+                  File(album.albumArtPath!),
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) =>
+                      buildDefaultArt(colors, album, typography),
+                )
+              : buildDefaultArt(colors, album, typography),
           Positioned.fill(
             child: CustomPaint(
               painter: _GlassBorderPainter(radius: 8, color: colors.secondary),
@@ -42,6 +43,7 @@ class AlbumCard extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
+                  AppHaptics.tap();
                   context.goNamed(AppRoutes.albumTracks, extra: album);
                 },
               ),
@@ -52,37 +54,38 @@ class AlbumCard extends StatelessWidget {
     );
   }
 }
-Widget buildDefaultArt(AppColors colors,Album album,AppTypography typography) {
+
+Widget buildDefaultArt(
+  AppColors colors,
+  Album album,
+  AppTypography typography,
+) {
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(8),
     color: colors.secondary.withValues(alpha: 0.2),
     child: Column(
       children: [
-       SvgPicture.asset(Assets.svgAlbums,
-       width: 52,
-       height: 52,
-       colorFilter: ColorFilter.mode(colors.primary, BlendMode.srcIn),
-       ),
-       const SizedBox(height: 8),
-       Text(
-         album.name,
-         style: typography.titleMedium,
-       ),
-       const SizedBox(height: 4),
-       Text(
-         album.artist,
-         style: typography.bodySmall,
-       ),
-       const SizedBox(height: 4),
-       Text(
-         '${album.trackCount} Songs • ${formatDuration(album.totalDuration)}',
-         style: typography.bodySmall,
-       ),
+        SvgPicture.asset(
+          Assets.svgAlbums,
+          width: 52,
+          height: 52,
+          colorFilter: ColorFilter.mode(colors.primary, BlendMode.srcIn),
+        ),
+        const SizedBox(height: 8),
+        Text(album.name, style: typography.titleMedium),
+        const SizedBox(height: 4),
+        Text(album.artist, style: typography.bodySmall),
+        const SizedBox(height: 4),
+        Text(
+          '${album.trackCount} Songs • ${formatDuration(album.totalDuration)}',
+          style: typography.bodySmall,
+        ),
       ],
     ),
   );
 }
+
 class _GlassBorderPainter extends CustomPainter {
   final double radius;
   final Color color;

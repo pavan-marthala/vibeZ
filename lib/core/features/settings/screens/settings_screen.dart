@@ -89,7 +89,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: Icons.info_outline,
               title: 'Version',
               subtitle: _appVersion.isNotEmpty ? _appVersion : '1.0.0',
-              onTap: null, // Just info
+              onTap: null, 
             ),
             _buildSettingTile(
               context,
@@ -97,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: 'Source Code',
               subtitle: 'View on GitHub',
               onTap: () async {
-                 final Uri url = Uri.parse('https://github.com/pavankalyanmarthala/vibeZ'); // Replace with actual repo if known
+                 final Uri url = Uri.parse('https://github.com/pavan-marthala/vibeZ'); // Replace with actual repo if known
                  if (!await launchUrl(url)) {
                    // ignore
                  }

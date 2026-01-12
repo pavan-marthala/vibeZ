@@ -32,31 +32,24 @@ class HomeScreen extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: colors.background,
-        body: RefreshIndicator(
-          onRefresh: () async {
-            context.read<StatsBloc>().add(RefreshStats());
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                floating: true,
-                centerTitle: true,
-                backgroundColor: colors.background,
-                title: const Text('vibeZ'),
-                actions: [
-                  IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-                ],
-              ),
-              const _StatsSection(),
-              const _RecentlyPlayedSection(),
-              const _TopTracksSection(),
-              SliverPadding(
-                padding: EdgeInsets.only(
-                  bottom: context.viewInsets.bottom + 160,
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              context.read<StatsBloc>().add(RefreshStats());
+            },
+            child: CustomScrollView(
+              slivers: [
+                const _StatsSection(),
+                const _RecentlyPlayedSection(),
+                const _TopTracksSection(),
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    bottom: context.viewInsets.bottom + 160,
+                  ),
+                  sliver: const _TopArtistsSection(),
                 ),
-                sliver: const _TopArtistsSection(),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -356,8 +349,7 @@ class _RecentTrackCard extends StatelessWidget {
                           height: 70,
                           alignment: .topCenter,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              _buildDefaultArt(colors),
+                          errorBuilder: (_, _, _) => _buildDefaultArt(colors),
                         )
                       : _buildDefaultArt(colors),
                 ),
@@ -569,9 +561,7 @@ class _TopArtistCard extends StatelessWidget {
     return SizedBox(
       width: 130,
       child: InkWell(
-        onTap: () {
-          
-        },
+        onTap: () {},
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(16),

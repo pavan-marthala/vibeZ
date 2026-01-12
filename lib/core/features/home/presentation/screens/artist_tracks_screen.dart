@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/bloc/music_library/music_library_bloc.dart';
-import 'package:music/core/features/shared/models/audio_track.dart';
 import 'package:music/core/features/utils/loading_widget.dart';
 import 'package:music/core/theme/app_theme.dart';
 import 'dart:io';

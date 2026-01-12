@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
+import 'package:music/core/features/utils/app_haptics.dart';
 import 'package:music/core/features/utils/app_utils.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -84,12 +85,20 @@ class _MiniProgressBar extends StatelessWidget {
               final seekPosition = data.dur * tapPosition;
               context.read<AudioPlayerBloc>().add(SeekTrack(seekPosition));
             },
+            onHorizontalDragStart: (_) {
+              AppHaptics.seekTick();
+            },
+
             // Drag to seek
             onHorizontalDragUpdate: (details) {
+              AppHaptics.seekTick();
               final RenderBox box = context.findRenderObject() as RenderBox;
               final dragPosition = details.localPosition.dx / box.size.width;
               final seekPosition = data.dur * dragPosition.clamp(0.0, 1.0);
               context.read<AudioPlayerBloc>().add(SeekTrack(seekPosition));
+            },
+            onHorizontalDragEnd: (details) {
+              AppHaptics.seekRelease();
             },
             child: Container(
               decoration: BoxDecoration(
@@ -205,15 +214,19 @@ class _MiniControls extends StatelessWidget {
                     size: 28,
                     enabled: data.currentIndex > 0,
                     onTap: data.currentIndex > 0
-                        ? () => context.read<AudioPlayerBloc>().add(
-                            PreviousTrack(),
-                          )
+                        ? () {
+                            AppHaptics.nextPrevious();
+                            context.read<AudioPlayerBloc>().add(
+                              PreviousTrack(),
+                            );
+                          }
                         : null,
                   ),
                   const SizedBox(width: 4),
 
                   GestureDetector(
                     onTap: () {
+                      AppHaptics.playPause();
                       context.read<AudioPlayerBloc>().add(
                         data.isPlaying ? PauseTrack() : ResumeTrack(),
                       );
@@ -247,7 +260,10 @@ class _MiniControls extends StatelessWidget {
                     size: 28,
                     enabled: data.currentIndex < data.queueLength - 1,
                     onTap: data.currentIndex < data.queueLength - 1
-                        ? () => context.read<AudioPlayerBloc>().add(NextTrack())
+                        ? () {
+                            AppHaptics.nextPrevious();
+                            context.read<AudioPlayerBloc>().add(NextTrack());
+                          }
                         : null,
                   ),
                 ],

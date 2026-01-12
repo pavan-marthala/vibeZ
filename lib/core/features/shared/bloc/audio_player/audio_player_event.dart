@@ -37,6 +37,15 @@ class NextTrack extends AudioPlayerEvent {}
 
 class PreviousTrack extends AudioPlayerEvent {}
 
+class SetVolume extends AudioPlayerEvent {
+  final double volume;
+
+  const SetVolume(this.volume);
+
+  @override
+  List<Object?> get props => [volume];
+}
+
 /// Internal event for updating duration
 class _UpdateDuration extends AudioPlayerEvent {
   final Duration duration;
@@ -54,6 +63,15 @@ class _UpdateIsPlaying extends AudioPlayerEvent {
 
   @override
   List<Object?> get props => [isPlaying];
+}
+
+class _UpdateVolume extends AudioPlayerEvent {
+  final double volume;
+
+  const _UpdateVolume(this.volume);
+
+  @override
+  List<Object?> get props => [volume];
 }
 
 /// Internal event for updating position

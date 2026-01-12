@@ -68,4 +68,6 @@ class VibezAudioHandler extends BaseAudioHandler
 
   @override
   Future<void> seek(Duration position) => _player.seek(position);
+
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
 }

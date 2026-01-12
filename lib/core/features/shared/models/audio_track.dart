@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:equatable/equatable.dart';
 
 class AudioTrack extends Equatable {
@@ -8,6 +10,10 @@ class AudioTrack extends Equatable {
   final Duration duration;
   final String path;
   final String? albumArtPath;
+  final DateTime? dateAdded;
+  final DateTime? dateModified;
+  final int? year;
+  final List<Color>? ambientColors;
 
   const AudioTrack({
     required this.id,
@@ -17,6 +23,10 @@ class AudioTrack extends Equatable {
     required this.duration,
     required this.path,
     this.albumArtPath,
+    this.dateAdded,
+    this.dateModified,
+    this.year,
+    this.ambientColors,
   });
 
   List<String> get artists {
@@ -32,6 +42,22 @@ class AudioTrack extends Equatable {
     return artistList.isNotEmpty ? artistList.first : artist;
   }
 
+  AudioTrack copyWith({List<Color>? ambientColors}) {
+    return AudioTrack(
+      id: id,
+      title: title,
+      artist: artist,
+      album: album,
+      duration: duration,
+      path: path,
+      albumArtPath: albumArtPath,
+      dateAdded: dateAdded,
+      dateModified: dateModified,
+      year: year,
+      ambientColors: ambientColors,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,
@@ -41,5 +67,9 @@ class AudioTrack extends Equatable {
     duration,
     path,
     albumArtPath,
+    dateAdded,
+    dateModified,
+    year,
+    ambientColors,
   ];
 }

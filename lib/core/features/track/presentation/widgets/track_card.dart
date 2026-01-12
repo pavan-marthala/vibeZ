@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
+import 'package:music/core/features/utils/app_haptics.dart';
 import 'package:music/core/features/utils/app_utils.dart';
-import 'package:music/core/features/utils/favorite_button.dart';
 import 'package:music/core/features/utils/track_options_menu.dart';
-import 'package:music/core/theme/app_theme.dart';
 
 class TrackCard extends StatelessWidget {
   const TrackCard({
@@ -23,7 +22,6 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.theme.appColors;
     return Container(
       decoration: BoxDecoration(
         color: isPlayingThisTrack ? Colors.white.withValues(alpha: 0.4) : null,
@@ -31,6 +29,10 @@ class TrackCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
+        onLongPress: () {
+          AppHaptics.longPress();
+          showTrackOptionsMenu(context, track);
+        },
         borderRadius: BorderRadius.circular(10),
         child: Padding(
           padding: const EdgeInsets.all(4),
@@ -62,7 +64,7 @@ class TrackCard extends StatelessWidget {
                   ],
                 ),
               ),
-              FavoriteButton(track: track),
+              // FavoriteButton(track: track),
               IconButton(
                 icon: Icon(
                   isPlayingThisTrack && isPlaying
@@ -72,10 +74,6 @@ class TrackCard extends StatelessWidget {
                   color: Colors.white,
                 ),
                 onPressed: onPlayPause,
-              ),
-              IconButton(
-                icon: Icon(Icons.more_vert, color: colors.textSecondary),
-                onPressed: () => showTrackOptionsMenu(context, track),
               ),
             ],
           ),

@@ -7,6 +7,7 @@ class AudioPlayerState extends Equatable {
   final bool isPlaying;
   final Duration position;
   final Duration duration;
+  final double volume;
 
   const AudioPlayerState({
     this.current,
@@ -15,6 +16,7 @@ class AudioPlayerState extends Equatable {
     this.isPlaying = false,
     this.position = Duration.zero,
     this.duration = Duration.zero,
+    this.volume = 1.0,
   });
 
   AudioPlayerState copyWith({
@@ -24,6 +26,7 @@ class AudioPlayerState extends Equatable {
     bool? isPlaying,
     Duration? position,
     Duration? duration,
+    double? volume,
     bool clearCurrent = false,
   }) {
     return AudioPlayerState(
@@ -33,6 +36,7 @@ class AudioPlayerState extends Equatable {
       isPlaying: isPlaying ?? this.isPlaying,
       position: position ?? this.position,
       duration: duration ?? this.duration,
+      volume: volume ?? this.volume,
     );
   }
 
@@ -44,5 +48,6 @@ class AudioPlayerState extends Equatable {
     isPlaying,
     position,
     duration,
+    volume,
   ];
 }

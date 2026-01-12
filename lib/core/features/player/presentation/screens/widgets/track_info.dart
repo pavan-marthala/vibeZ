@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music/core/features/shared/models/audio_track.dart';
-
+import 'package:music/core/features/utils/favorite_button.dart';
 import 'package:music/core/theme/app_theme.dart';
 
 class TrackInfo extends StatelessWidget {
@@ -11,6 +11,8 @@ class TrackInfo extends StatelessWidget {
     final colors = context.theme.appColors;
     final typography = context.theme.appTypography;
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: Column(
@@ -36,7 +38,7 @@ class TrackInfo extends StatelessWidget {
             ],
           ),
         ),
-        // AppIconButton(icon: Icon(Icons.favorite_border), size: 46),
+        if (track != null) ...[FavoriteButton(track: track!)],
       ],
     );
   }

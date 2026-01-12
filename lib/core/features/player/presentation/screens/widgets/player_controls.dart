@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:music/core/features/shared/bloc/audio_player/audio_player_bloc.dart';
+import 'package:music/core/features/utils/app_haptics.dart';
 import 'package:music/core/theme/app_theme.dart';
 
 class PlayerControls extends StatelessWidget {
@@ -33,7 +34,10 @@ class PlayerControls extends StatelessWidget {
               ),
               enabled: ispreviousEnabled,
               onTap: ispreviousEnabled
-                  ? () => context.read<AudioPlayerBloc>().add(PreviousTrack())
+                  ? () {
+                      AppHaptics.nextPrevious();
+                      context.read<AudioPlayerBloc>().add(PreviousTrack());
+                    }
                   : null,
             ),
             ControleButton(
@@ -47,6 +51,7 @@ class PlayerControls extends StatelessWidget {
               size: 64,
               color: colors.primary.withValues(alpha: .8),
               onTap: () {
+                AppHaptics.playPause();
                 context.read<AudioPlayerBloc>().add(
                   state.isPlaying ? PauseTrack() : ResumeTrack(),
                 );
@@ -60,7 +65,10 @@ class PlayerControls extends StatelessWidget {
               ),
               enabled: isNextEnabled,
               onTap: isNextEnabled
-                  ? () => context.read<AudioPlayerBloc>().add(NextTrack())
+                  ? () {
+                      AppHaptics.nextPrevious();
+                      context.read<AudioPlayerBloc>().add(NextTrack());
+                    }
                   : null,
             ),
           ],
